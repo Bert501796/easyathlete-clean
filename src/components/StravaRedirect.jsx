@@ -6,6 +6,8 @@ const StravaRedirect = () => {
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const code = urlParams.get('code');
+    console.log("🚨 useEffect triggered");
+    console.log("✅ code from URL:", code);
 
     if (!code) {
       setStatus('❌ Authorization code not found in URL.');
@@ -14,7 +16,7 @@ const StravaRedirect = () => {
 
     const exchangeToken = async () => {
       try {
-        // Step 1: Exchange code for access token
+        console.log("📤 Sending code to backend...");
         const response = await fetch(`${import.meta.env.VITE_API_URL}/strava/exchange`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -28,22 +30,20 @@ const StravaRedirect = () => {
         }
 
         const accessToken = data.access_token;
+        console.log("📥 Received access token:", accessToken);
         localStorage.setItem('strava_token', accessToken);
 
-        // Step 2: Fetch recent activities
         const activitiesRes = await fetch('https://www.strava.com/api/v3/athlete/activities?per_page=100', {
           headers: { Authorization: `Bearer ${accessToken}` },
         });
 
         const activities = await activitiesRes.json();
+        console.log("✅ Activities fetched:", activities);
 
-        // Step 3: Store in localStorage
         localStorage.setItem('strava_activities', JSON.stringify(activities));
-
-        // Step 4: Redirect to /connect
         window.location.href = '/connect';
       } catch (error) {
-        console.error(error);
+        console.error("❌ Error during Strava redirect flow:", error);
         setStatus(`❌ ${error.message}`);
       }
     };
