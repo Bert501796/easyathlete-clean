@@ -14,12 +14,12 @@ const StravaRedirect = () => {
 
     const exchangeToken = async () => {
       try {
+        // Step 1: Exchange code for access token
         const response = await fetch(`${import.meta.env.VITE_API_URL}/strava/exchange`, {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({ code }),
-});
-
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ code }),
+        });
 
         const data = await response.json();
 
@@ -27,8 +27,21 @@ const StravaRedirect = () => {
           throw new Error(data.error || 'Failed to retrieve token');
         }
 
-        localStorage.setItem('strava_token', data.access_token);
-        setStatus('✅ Strava connected! You can now continue.');
+        const accessToken = data.access_token;
+        localStorage.setItem('strava_token', accessToken);
+
+        // Step 2: Fetch recent activities
+        const activitiesRes = await fetch('https://www.strava.com/api/v3/athlete/activities?per_page=100', {
+          headers: { Authorization: `Bearer ${accessToken}` },
+        });
+
+        const activities = await activitiesRes.json();
+
+        // Step 3: Store in localStorage
+        localStorage.setItem('strava_activities', JSON.stringify(activities));
+
+        // Step 4: Redirect to /connect
+        window.location.href = '/connect';
       } catch (error) {
         console.error(error);
         setStatus(`❌ ${error.message}`);
