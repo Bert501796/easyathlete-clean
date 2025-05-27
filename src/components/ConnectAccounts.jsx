@@ -1,8 +1,16 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 const ConnectAccounts = () => {
   const navigate = useNavigate();
+  const [stravaConnected, setStravaConnected] = useState(false);
+
+  useEffect(() => {
+    const token = localStorage.getItem('strava_token');
+    if (token) {
+      setStravaConnected(true);
+    }
+  }, []);
 
   const clientId = '161074';
   const redirectUri =
@@ -20,12 +28,16 @@ const ConnectAccounts = () => {
       <p className="mb-6">You can connect one or both platforms, or skip this step.</p>
 
       <div className="flex flex-col gap-4 items-center">
-        <a
-          href={stravaAuthUrl}
-          className="bg-orange-500 text-white px-6 py-2 rounded hover:bg-orange-600"
-        >
-          🔗 Connect with Strava
-        </a>
+        {stravaConnected ? (
+          <p className="text-green-600">✅ Strava Connected</p>
+        ) : (
+          <a
+            href={stravaAuthUrl}
+            className="bg-orange-500 text-white px-6 py-2 rounded hover:bg-orange-600"
+          >
+            🔗 Connect with Strava
+          </a>
+        )}
 
         <button
           className="bg-gray-400 text-white px-6 py-2 rounded cursor-not-allowed opacity-50"
