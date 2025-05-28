@@ -39,7 +39,7 @@ const ConnectAccounts = () => {
     formData.append('fitFile', fitFile);
 
     try {
-      const response = await fetch('http://localhost:3001/upload-fit', {
+      const response = await fetch('https://easyathlete-backend-production.up.railway.app/upload-fit', {
         method: 'POST',
         body: formData
       });
