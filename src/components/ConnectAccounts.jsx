@@ -1,10 +1,19 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
+const getOrCreateUserId = () => {
+  let userId = localStorage.getItem('easyathlete_user_id');
+  if (!userId) {
+    userId = `user_${crypto.randomUUID()}`;
+    localStorage.setItem('easyathlete_user_id', userId);
+  }
+  return userId;
+};
+
 const ConnectAccounts = () => {
   const navigate = useNavigate();
   const [stravaConnected, setStravaConnected] = useState(false);
-  const [fitFile, setFitFile] = useState(null);
+  const [fitFiles, setFitFiles] = useState([]);
   const [uploadStatus, setUploadStatus] = useState('');
 
   useEffect(() => {
@@ -25,28 +34,37 @@ const ConnectAccounts = () => {
   )}&approval_prompt=auto&scope=read,activity:read_all`;
 
   const handleFileChange = (event) => {
-    setFitFile(event.target.files[0]);
+    setFitFiles(Array.from(event.target.files));
     setUploadStatus('');
   };
 
   const handleUpload = async () => {
-    if (!fitFile) {
-      setUploadStatus('Please select a file first.');
+    if (!fitFiles || fitFiles.length === 0) {
+      setUploadStatus('Please select one or more files first.');
       return;
     }
 
     const formData = new FormData();
-    formData.append('fitFile', fitFile);
+    const userId = getOrCreateUserId();
+
+    fitFiles.forEach((file) => {
+      formData.append('fitFiles', file);
+    });
+
+    formData.append('userId', userId);
 
     try {
-      const response = await fetch('https://easyathlete-backend-production.up.railway.app/upload-fit', {
-        method: 'POST',
-        body: formData
-      });
+      const response = await fetch(
+        'https://easyathlete-backend-production.up.railway.app/upload-fit',
+        {
+          method: 'POST',
+          body: formData
+        }
+      );
 
       if (response.ok) {
-        setUploadStatus('✅ File uploaded successfully.');
-        setFitFile(null);
+        setUploadStatus('✅ Files uploaded successfully.');
+        setFitFiles([]);
       } else {
         setUploadStatus('❌ Upload failed. Try again.');
       }
@@ -74,10 +92,11 @@ const ConnectAccounts = () => {
         )}
 
         <div className="w-full text-center">
-          <p className="text-gray-700 mt-4 mb-2">Or upload a Garmin .fit file:</p>
+          <p className="text-gray-700 mt-4 mb-2">Or upload Garmin .fit files:</p>
           <input
             type="file"
             accept=".fit"
+            multiple
             onChange={handleFileChange}
             className="mb-2"
           />
@@ -85,7 +104,7 @@ const ConnectAccounts = () => {
             onClick={handleUpload}
             className="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600"
           >
-            ⬆️ Upload .fit File
+            ⬆️ Upload .fit Files
           </button>
           {uploadStatus && <p className="mt-2 text-sm">{uploadStatus}</p>}
         </div>
