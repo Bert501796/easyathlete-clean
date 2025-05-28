@@ -1,5 +1,5 @@
 // src/components/OnboardingChatbot.jsx
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 
 const getOrCreateUserId = () => {
   let userId = localStorage.getItem('easyathlete_user_id');
@@ -9,8 +9,6 @@ const getOrCreateUserId = () => {
   }
   return userId;
 };
-
-const userId = getOrCreateUserId(); // create right when chatbot starts
 
 const questions = [
   {
@@ -54,6 +52,8 @@ export default function OnboardingChatbot({ onComplete }) {
   const [input, setInput] = useState('');
   const [multiSelect, setMultiSelect] = useState([]);
 
+  const userId = useMemo(() => getOrCreateUserId(), []);
+
   const current = questions[step];
 
   const handleNext = (value) => {
@@ -65,7 +65,7 @@ export default function OnboardingChatbot({ onComplete }) {
     if (step + 1 < questions.length) {
       setStep(step + 1);
     } else {
-      submitOnboardingToBackend(updated); // ⬅️ Upload on complete
+      submitOnboardingToBackend(updated);
       onComplete(updated);
     }
   };
@@ -77,6 +77,8 @@ export default function OnboardingChatbot({ onComplete }) {
   };
 
   const submitOnboardingToBackend = async (data) => {
+    console.log('📤 Submitting onboarding with:', { userId, onboardingData: data });
+
     try {
       const response = await fetch('https://easyathlete-backend-production.up.railway.app/upload-onboarding', {
         method: 'POST',
