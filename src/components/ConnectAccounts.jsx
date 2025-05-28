@@ -1,20 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-const getOrCreateUserId = () => {
-  let userId = localStorage.getItem('easyathlete_user_id');
-  if (!userId) {
-    userId = `user_${crypto.randomUUID()}`;
-    localStorage.setItem('easyathlete_user_id', userId);
-  }
-  return userId;
-};
-
 const ConnectAccounts = () => {
   const navigate = useNavigate();
   const [stravaConnected, setStravaConnected] = useState(false);
   const [fitFiles, setFitFiles] = useState([]);
   const [uploadStatus, setUploadStatus] = useState('');
+
+const userId = localStorage.getItem('easyathlete_user_id');
 
   useEffect(() => {
     const token = localStorage.getItem('strava_token');
@@ -38,41 +31,46 @@ const ConnectAccounts = () => {
     setUploadStatus('');
   };
 
-  const handleUpload = async () => {
-    if (!fitFiles || fitFiles.length === 0) {
-      setUploadStatus('Please select one or more files first.');
-      return;
-    }
+const handleUpload = async () => {
+  if (!fitFiles || fitFiles.length === 0) {
+    setUploadStatus('Please select one or more files first.');
+    return;
+  }
 
-    const formData = new FormData();
-    const userId = getOrCreateUserId();
+  if (!userId) {
+    setUploadStatus('❌ No user found. Please complete onboarding first.');
+    return;
+  }
 
-    fitFiles.forEach((file) => {
-      formData.append('fitFiles', file);
-    });
+  const formData = new FormData();
 
-    formData.append('userId', userId);
+  fitFiles.forEach((file) => {
+    formData.append('fitFiles', file);
+  });
 
-    try {
-      const response = await fetch(
-        'https://easyathlete-backend-production.up.railway.app/upload-fit',
-        {
-          method: 'POST',
-          body: formData
-        }
-      );
+  formData.append('userId', userId);
 
-      if (response.ok) {
-        setUploadStatus('✅ Files uploaded successfully.');
-        setFitFiles([]);
-      } else {
-        setUploadStatus('❌ Upload failed. Try again.');
+  try {
+    const response = await fetch(
+      'https://easyathlete-backend-production.up.railway.app/upload-fit',
+      {
+        method: 'POST',
+        body: formData
       }
-    } catch (error) {
-      console.error(error);
-      setUploadStatus('❌ An error occurred during upload.');
+    );
+
+    if (response.ok) {
+      setUploadStatus('✅ Files uploaded successfully.');
+      setFitFiles([]);
+    } else {
+      setUploadStatus('❌ Upload failed. Try again.');
     }
-  };
+  } catch (error) {
+    console.error(error);
+    setUploadStatus('❌ An error occurred during upload.');
+  }
+};
+
 
   return (
     <div className="max-w-xl mx-auto p-6 text-center">

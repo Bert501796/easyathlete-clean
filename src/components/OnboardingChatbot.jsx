@@ -1,6 +1,17 @@
 // src/components/OnboardingChatbot.jsx
 import React, { useState } from 'react';
 
+const getOrCreateUserId = () => {
+  let userId = localStorage.getItem('easyathlete_user_id');
+  if (!userId) {
+    userId = `user_${crypto.randomUUID()}`;
+    localStorage.setItem('easyathlete_user_id', userId);
+  }
+  return userId;
+};
+
+const userId = getOrCreateUserId(); // create right when chatbot starts
+
 const questions = [
   {
     key: 'goal',
@@ -54,6 +65,7 @@ export default function OnboardingChatbot({ onComplete }) {
     if (step + 1 < questions.length) {
       setStep(step + 1);
     } else {
+      submitOnboardingToBackend(updated); // ⬅️ Upload on complete
       onComplete(updated);
     }
   };
@@ -62,6 +74,29 @@ export default function OnboardingChatbot({ onComplete }) {
     setMultiSelect((prev) =>
       prev.includes(item) ? prev.filter(i => i !== item) : [...prev, item]
     );
+  };
+
+  const submitOnboardingToBackend = async (data) => {
+    try {
+      const response = await fetch('https://easyathlete-backend-production.up.railway.app/upload-onboarding', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          userId,
+          onboardingData: data
+        })
+      });
+
+      if (!response.ok) {
+        console.error('❌ Failed to upload onboarding data');
+      } else {
+        console.log('✅ Onboarding data uploaded');
+      }
+    } catch (error) {
+      console.error('❌ Error uploading onboarding data:', error);
+    }
   };
 
   return (
