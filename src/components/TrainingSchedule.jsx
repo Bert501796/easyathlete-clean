@@ -1,14 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  LineChart,
-  Line,
+  BarChart,
+  Bar,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  Legend
+  Cell
 } from 'recharts';
 
 const TrainingSchedule = () => {
@@ -62,15 +62,25 @@ const TrainingSchedule = () => {
   const parseChartData = (segments) => {
     if (!Array.isArray(segments)) return [];
     let time = 0;
-    return segments.flatMap(segment => {
-      const points = Array.from({ length: segment.duration }, (_, i) => ({
-        time: time + i,
+    return segments.map(segment => {
+      const entry = {
+        name: segment.label,
         hf: segment.heartRate,
-        label: segment.label
-      }));
+        duration: segment.duration,
+        timeLabel: `${time}–${time + segment.duration} min`
+      };
       time += segment.duration;
-      return points;
+      return entry;
     });
+  };
+
+  const segmentColors = {
+    Warmup: '#90ee90',
+    Warm-up: '#90ee90',
+    Work: '#ffa07a',
+    Cooldown: '#add8e6',
+    'Cool-down': '#add8e6',
+    Rest: '#f5f5dc'
   };
 
   const TrainingChart = ({ data }) => {
@@ -80,20 +90,20 @@ const TrainingSchedule = () => {
 
     return (
       <ResponsiveContainer width="100%" height={200}>
-        <LineChart data={data} margin={{ top: 10, right: 20, bottom: 10, left: 40 }}>
+        <BarChart data={data} margin={{ top: 10, right: 20, bottom: 10, left: 40 }}>
           <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="time" label={{ value: 'Time (min)', position: 'insideBottom', offset: -5 }} />
-          <YAxis
-            type="number"
-            domain={[minHR - 5, maxHR + 5]}
-            label={{ value: 'Heart Rate (bpm)', angle: -90, position: 'insideLeft' }}
-            ticks={Array.from(new Set(hrValues))}
-            tickFormatter={(tick) => `${tick} bpm`}
-          />
+          <XAxis dataKey="timeLabel" interval={0} angle={-45} textAnchor="end" height={60} />
+          <YAxis domain={[minHR - 5, maxHR + 5]} label={{ value: 'Heart Rate (bpm)', angle: -90, position: 'insideLeft' }} />
           <Tooltip formatter={(value) => `${value} bpm`} />
-          <Legend />
-          <Line type="monotone" dataKey="hf" stroke="#82ca9d" strokeWidth={2} dot={false} />
-        </LineChart>
+          <Bar dataKey="hf">
+            {data.map((entry, index) => (
+              <Cell
+                key={`cell-${index}`}
+                fill={segmentColors[entry.name] || '#8884d8'}
+              />
+            ))}
+          </Bar>
+        </BarChart>
       </ResponsiveContainer>
     );
   };
