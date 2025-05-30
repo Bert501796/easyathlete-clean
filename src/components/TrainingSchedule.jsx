@@ -73,18 +73,39 @@ const TrainingSchedule = () => {
     });
   };
 
-  const TrainingChart = ({ data }) => (
-    <ResponsiveContainer width="100%" height={200}>
-      <LineChart data={data}>
-        <CartesianGrid strokeDasharray="3 3" />
-        <XAxis dataKey="time" label={{ value: 'Time (min)', position: 'insideBottom', offset: -5 }} />
-        <YAxis domain={[1, 5]} tickCount={5} label={{ value: 'Zone', angle: -90, position: 'insideLeft' }} />
-        <Tooltip formatter={(value, name, props) => [`Zone ${value}`, 'Intensity']} />
-        <Legend />
-        <Line type="monotone" dataKey="zone" stroke="#8884d8" strokeWidth={2} dot={false} />
-      </LineChart>
-    </ResponsiveContainer>
-  );
+  const getZoneRange = (zone) => {
+    const ranges = {
+      1: '100–120',
+      2: '121–140',
+      3: '141–155',
+      4: '156–170',
+      5: '171–185'
+    };
+    return `${ranges[zone]} bpm`;
+  };
+
+  const TrainingChart = ({ data }) => {
+    const zoneValues = data.map(d => d.zone);
+    const minZone = Math.min(...zoneValues);
+    const maxZone = Math.max(...zoneValues);
+
+    return (
+      <ResponsiveContainer width="100%" height={200}>
+        <LineChart data={data}>
+          <CartesianGrid strokeDasharray="3 3" />
+          <XAxis dataKey="time" label={{ value: 'Time (min)', position: 'insideBottom', offset: -5 }} />
+          <YAxis
+            domain={[minZone, maxZone]}
+            tickFormatter={(value) => `Zone ${value}`}
+            label={{ value: 'Heart Rate Zone', angle: -90, position: 'insideLeft' }}
+          />
+          <Tooltip formatter={(value) => [`Zone ${value}`, 'Intensity']} />
+          <Legend />
+          <Line type="monotone" dataKey="zone" stroke="#8884d8" strokeWidth={2} dot={false} />
+        </LineChart>
+      </ResponsiveContainer>
+    );
+  };
 
   const HeartZones = () => {
     const zones = [
