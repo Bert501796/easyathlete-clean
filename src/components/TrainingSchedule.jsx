@@ -7,6 +7,7 @@ const TrainingSchedule = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('schedule');
+  const [expandedIndex, setExpandedIndex] = useState(null);
   const userId = localStorage.getItem('easyathlete_user_id');
 
   useEffect(() => {
@@ -49,7 +50,6 @@ const TrainingSchedule = () => {
   }, {});
 
   const HeartZones = () => {
-    // Dummy data, should be computed from activity summary
     const zones = [
       { name: 'Zone 1 (Recovery)', range: '100–120 bpm' },
       { name: 'Zone 2 (Endurance)', range: '121–140 bpm' },
@@ -111,7 +111,15 @@ const TrainingSchedule = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {groupedByWeek[week].map((session, i) => (
               <div key={i} className="border rounded-lg p-4 bg-white shadow">
-                <h4 className="text-md font-bold">Day {session.day}</h4>
+                <div className="flex justify-between items-center">
+                  <h4 className="text-md font-bold">Day {session.day}</h4>
+                  <button
+                    className="text-blue-600 text-sm underline"
+                    onClick={() => setExpandedIndex(expandedIndex === `${week}-${i}` ? null : `${week}-${i}`)}
+                  >
+                    {expandedIndex === `${week}-${i}` ? 'Hide details' : 'Show details'}
+                  </button>
+                </div>
                 <p className="text-sm mb-1">
                   {sportIcons[session.sport] || '🏋️‍♂️'} {session.sport}
                 </p>
@@ -119,7 +127,13 @@ const TrainingSchedule = () => {
                   <>
                     <p><strong>Duration:</strong> {session.durationMinutes} min</p>
                     <p><strong>Intensity:</strong> {session.intensityZone}</p>
-                    <p className="text-sm mt-2 text-gray-600">{session.notes}</p>
+                    {expandedIndex === `${week}-${i}` && (
+                      <div className="mt-2 text-gray-600 text-sm">
+                        <p><strong>Focus:</strong> {session.focus || 'General Endurance'}</p>
+                        <p><strong>Details:</strong> {session.notes}</p>
+                        {/* Optional: Visual component can go here */}
+                      </div>
+                    )}
                   </>
                 ) : (
                   <p className="italic text-gray-500">Rest and recovery</p>
