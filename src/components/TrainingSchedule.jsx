@@ -80,14 +80,16 @@ const TrainingSchedule = () => {
 
     return (
       <ResponsiveContainer width="100%" height={200}>
-        <LineChart data={data}>
+        <LineChart data={data} margin={{ top: 10, right: 20, bottom: 10, left: 40 }}>
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis dataKey="time" label={{ value: 'Time (min)', position: 'insideBottom', offset: -5 }} />
           <YAxis
+            type="number"
             domain={[minHR - 5, maxHR + 5]}
             label={{ value: 'Heart Rate (bpm)', angle: -90, position: 'insideLeft' }}
+            tickFormatter={(tick) => `${tick} bpm`}
           />
-          <Tooltip formatter={(value, name) => [`${value} bpm`, 'Heart Rate']} />
+          <Tooltip formatter={(value) => `${value} bpm`} />
           <Legend />
           <Line type="monotone" dataKey="hf" stroke="#82ca9d" strokeWidth={2} dot={false} />
         </LineChart>
