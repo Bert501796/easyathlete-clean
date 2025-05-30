@@ -61,26 +61,33 @@ const TrainingSchedule = () => {
 
   const parseChartData = (notes) => {
     if (!notes) return [];
-    const lines = notes.split('. ');
-    return lines.map((line, i) => {
-      const match = line.match(/(\d+)(?: min| minutes)?.*?(zone|Zone)?\s?(\d)?/i);
-      return match ? {
-        name: `Step ${i + 1}`,
-        minutes: parseInt(match[1]),
-        zone: match[3] ? parseInt(match[3]) : 1
-      } : null;
-    }).filter(Boolean);
+    const lines = notes.split(/\.\s+/);
+    let currentTime = 0;
+    const chartData = [];
+
+    lines.forEach((line) => {
+      const match = line.match(/(\d+)\s*(?:min|minutes)?[^\d]*(?:zone\s*(\d))?/i);
+      if (match) {
+        const duration = parseInt(match[1]);
+        const zone = parseInt(match[2]) || 1;
+        for (let i = 0; i < duration; i++) {
+          chartData.push({ time: currentTime++, zone });
+        }
+      }
+    });
+
+    return chartData;
   };
 
   const TrainingChart = ({ data }) => (
     <ResponsiveContainer width="100%" height={200}>
       <LineChart data={data}>
         <CartesianGrid strokeDasharray="3 3" />
-        <XAxis dataKey="name" />
+        <XAxis dataKey="time" label={{ value: 'Time (min)', position: 'insideBottom', offset: -5 }} />
         <YAxis domain={[1, 5]} tickCount={5} label={{ value: 'Zone', angle: -90, position: 'insideLeft' }} />
         <Tooltip />
         <Legend />
-        <Line type="monotone" dataKey="zone" stroke="#8884d8" strokeWidth={2} />
+        <Line type="monotone" dataKey="zone" stroke="#8884d8" strokeWidth={2} dot={false} />
       </LineChart>
     </ResponsiveContainer>
   );
