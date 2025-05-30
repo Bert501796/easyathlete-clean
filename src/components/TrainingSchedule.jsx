@@ -59,24 +59,18 @@ const TrainingSchedule = () => {
     return acc;
   }, {});
 
-  const parseChartData = (notes) => {
-    if (!notes) return [];
-    const lines = notes.split(/\.\s+/);
-    let currentTime = 0;
-    const chartData = [];
-
-    lines.forEach((line) => {
-      const match = line.match(/(\d+)\s*(?:min|minutes)?[^\d]*(?:zone\s*(\d))?/i);
-      if (match) {
-        const duration = parseInt(match[1]);
-        const zone = parseInt(match[2]) || 1;
-        for (let i = 0; i < duration; i++) {
-          chartData.push({ time: currentTime++, zone });
-        }
-      }
+  const parseChartData = (segments) => {
+    if (!Array.isArray(segments)) return [];
+    let time = 0;
+    return segments.flatMap(segment => {
+      const points = Array.from({ length: segment.duration }, (_, i) => ({
+        time: time + i,
+        zone: segment.zone,
+        label: segment.label
+      }));
+      time += segment.duration;
+      return points;
     });
-
-    return chartData;
   };
 
   const TrainingChart = ({ data }) => (
@@ -85,7 +79,7 @@ const TrainingSchedule = () => {
         <CartesianGrid strokeDasharray="3 3" />
         <XAxis dataKey="time" label={{ value: 'Time (min)', position: 'insideBottom', offset: -5 }} />
         <YAxis domain={[1, 5]} tickCount={5} label={{ value: 'Zone', angle: -90, position: 'insideLeft' }} />
-        <Tooltip />
+        <Tooltip formatter={(value, name, props) => [`Zone ${value}`, 'Intensity']} />
         <Legend />
         <Line type="monotone" dataKey="zone" stroke="#8884d8" strokeWidth={2} dot={false} />
       </LineChart>
@@ -175,7 +169,7 @@ const TrainingSchedule = () => {
                         <p><strong>Focus:</strong> {session.focus || 'General Endurance'}</p>
                         <p><strong>Details:</strong> {session.notes}</p>
                         <div className="mt-4">
-                          <TrainingChart data={parseChartData(session.notes)} />
+                          <TrainingChart data={parseChartData(session.segments)} />
                         </div>
                       </div>
                     )}
