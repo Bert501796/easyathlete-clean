@@ -59,6 +59,7 @@ const ConnectAccounts = () => {
       if (response.ok) {
         setUploadStatus('✅ Files uploaded successfully.');
         setFitFiles([]);
+        navigate('/schedule');
       } else {
         setUploadStatus('❌ Upload failed. Try again.');
       }
