@@ -84,11 +84,15 @@ const TrainingSchedule = () => {
     };
     const color = colorMap[segment.label] || 'bg-gray-100';
 
+    const hr = segment.heartRateMin && segment.heartRateMax
+      ? `${segment.heartRateMin}–${segment.heartRateMax} bpm`
+      : segment.heartRate ? `${segment.heartRate} bpm` : 'n/a';
+
     return (
       <div className={`rounded p-3 my-1 ${color}`}>
         <strong>Step:</strong> {segment.label}<br />
         <strong>Duration:</strong> {segment.duration} min<br />
-        <strong>Heart Rate:</strong> {segment.heartRate} bpm
+        <strong>Heart Rate:</strong> {hr}
       </div>
     );
   };
