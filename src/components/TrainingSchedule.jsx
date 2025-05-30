@@ -87,6 +87,7 @@ const TrainingSchedule = () => {
             type="number"
             domain={[minHR - 5, maxHR + 5]}
             label={{ value: 'Heart Rate (bpm)', angle: -90, position: 'insideLeft' }}
+            ticks={Array.from(new Set(hrValues))}
             tickFormatter={(tick) => `${tick} bpm`}
           />
           <Tooltip formatter={(value) => `${value} bpm`} />
