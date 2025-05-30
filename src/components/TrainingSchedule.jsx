@@ -1,5 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  Legend
+} from 'recharts';
 
 const TrainingSchedule = () => {
   const navigate = useNavigate();
@@ -48,6 +58,32 @@ const TrainingSchedule = () => {
     acc[session.week].push(session);
     return acc;
   }, {});
+
+  const parseChartData = (notes) => {
+    if (!notes) return [];
+    const lines = notes.split('. ');
+    return lines.map((line, i) => {
+      const match = line.match(/(\d+)(?: min| minutes)?.*?(zone|Zone)?\s?(\d)?/i);
+      return match ? {
+        name: `Step ${i + 1}`,
+        minutes: parseInt(match[1]),
+        zone: match[3] ? parseInt(match[3]) : 1
+      } : null;
+    }).filter(Boolean);
+  };
+
+  const TrainingChart = ({ data }) => (
+    <ResponsiveContainer width="100%" height={200}>
+      <LineChart data={data}>
+        <CartesianGrid strokeDasharray="3 3" />
+        <XAxis dataKey="name" />
+        <YAxis domain={[1, 5]} tickCount={5} label={{ value: 'Zone', angle: -90, position: 'insideLeft' }} />
+        <Tooltip />
+        <Legend />
+        <Line type="monotone" dataKey="zone" stroke="#8884d8" strokeWidth={2} />
+      </LineChart>
+    </ResponsiveContainer>
+  );
 
   const HeartZones = () => {
     const zones = [
@@ -131,7 +167,9 @@ const TrainingSchedule = () => {
                       <div className="mt-2 text-gray-600 text-sm">
                         <p><strong>Focus:</strong> {session.focus || 'General Endurance'}</p>
                         <p><strong>Details:</strong> {session.notes}</p>
-                        {/* Optional: Visual component can go here */}
+                        <div className="mt-4">
+                          <TrainingChart data={parseChartData(session.notes)} />
+                        </div>
                       </div>
                     )}
                   </>
