@@ -1,15 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  Cell
-} from 'recharts';
 
 const TrainingSchedule = () => {
   const navigate = useNavigate();
@@ -59,55 +49,6 @@ const TrainingSchedule = () => {
     return acc;
   }, {});
 
-  const parseChartData = (segments) => {
-    if (!Array.isArray(segments)) return [];
-    let time = 0;
-    return segments.map(segment => {
-      const entry = {
-        name: segment.label,
-        hf: segment.heartRate,
-        duration: segment.duration,
-        timeLabel: `${time}–${time + segment.duration} min`
-      };
-      time += segment.duration;
-      return entry;
-    });
-  };
-
-  const segmentColors = {
-    Warmup: '#90ee90',
-    Warm-up: '#90ee90',
-    Work: '#ffa07a',
-    Cooldown: '#add8e6',
-    'Cool-down': '#add8e6',
-    Rest: '#f5f5dc'
-  };
-
-  const TrainingChart = ({ data }) => {
-    const hrValues = data.map(d => d.hf);
-    const minHR = Math.min(...hrValues);
-    const maxHR = Math.max(...hrValues);
-
-    return (
-      <ResponsiveContainer width="100%" height={200}>
-        <BarChart data={data} margin={{ top: 10, right: 20, bottom: 10, left: 40 }}>
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="timeLabel" interval={0} angle={-45} textAnchor="end" height={60} />
-          <YAxis domain={[minHR - 5, maxHR + 5]} label={{ value: 'Heart Rate (bpm)', angle: -90, position: 'insideLeft' }} />
-          <Tooltip formatter={(value) => `${value} bpm`} />
-          <Bar dataKey="hf">
-            {data.map((entry, index) => (
-              <Cell
-                key={`cell-${index}`}
-                fill={segmentColors[entry.name] || '#8884d8'}
-              />
-            ))}
-          </Bar>
-        </BarChart>
-      </ResponsiveContainer>
-    );
-  };
-
   const HeartZones = () => {
     const zones = [
       { name: 'Zone 1 (Recovery)', range: '100–120 bpm' },
@@ -128,6 +69,26 @@ const TrainingSchedule = () => {
           ))}
         </ul>
         <p className="mt-4 text-sm text-gray-600">VO2 Max estimate will be added soon.</p>
+      </div>
+    );
+  };
+
+  const SegmentStep = ({ segment }) => {
+    const colorMap = {
+      Warmup: 'bg-green-100',
+      'Warm-up': 'bg-green-100',
+      Work: 'bg-orange-100',
+      Rest: 'bg-yellow-100',
+      Cooldown: 'bg-blue-100',
+      'Cool-down': 'bg-blue-100'
+    };
+    const color = colorMap[segment.label] || 'bg-gray-100';
+
+    return (
+      <div className={`rounded p-3 my-1 ${color}`}>
+        <strong>Step:</strong> {segment.label}<br />
+        <strong>Duration:</strong> {segment.duration} min<br />
+        <strong>Heart Rate:</strong> {segment.heartRate} bpm
       </div>
     );
   };
@@ -190,9 +151,14 @@ const TrainingSchedule = () => {
                       <div className="mt-2 text-gray-600 text-sm">
                         <p><strong>Focus:</strong> {session.focus || 'General Endurance'}</p>
                         <p><strong>Details:</strong> {session.notes}</p>
-                        <div className="mt-4">
-                          <TrainingChart data={parseChartData(session.segments)} />
-                        </div>
+                        {session.segments?.length > 0 && (
+                          <div className="mt-4">
+                            <h5 className="font-semibold mb-2">Training Segments</h5>
+                            {session.segments.map((segment, idx) => (
+                              <SegmentStep key={idx} segment={segment} />
+                            ))}
+                          </div>
+                        )}
                       </div>
                     )}
                   </>
