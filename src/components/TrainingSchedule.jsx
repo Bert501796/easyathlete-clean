@@ -6,6 +6,7 @@ const TrainingSchedule = () => {
   const [schedule, setSchedule] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [activeTab, setActiveTab] = useState('schedule');
   const userId = localStorage.getItem('easyathlete_user_id');
 
   useEffect(() => {
@@ -47,9 +48,49 @@ const TrainingSchedule = () => {
     return acc;
   }, {});
 
+  const HeartZones = () => {
+    // Dummy data, should be computed from activity summary
+    const zones = [
+      { name: 'Zone 1 (Recovery)', range: '100–120 bpm' },
+      { name: 'Zone 2 (Endurance)', range: '121–140 bpm' },
+      { name: 'Zone 3 (Tempo)', range: '141–155 bpm' },
+      { name: 'Zone 4 (Threshold)', range: '156–170 bpm' },
+      { name: 'Zone 5 (VO2 Max)', range: '171–185 bpm' }
+    ];
+
+    return (
+      <div className="mt-6">
+        <h3 className="text-xl font-semibold mb-4">🫀 Estimated Heart Rate Zones</h3>
+        <ul className="space-y-2">
+          {zones.map((zone, i) => (
+            <li key={i} className="p-4 border rounded bg-white shadow">
+              <strong>{zone.name}</strong>: {zone.range}
+            </li>
+          ))}
+        </ul>
+        <p className="mt-4 text-sm text-gray-600">VO2 Max estimate will be added soon.</p>
+      </div>
+    );
+  };
+
   return (
     <div className="p-6">
-      <h2 className="text-2xl font-bold mb-6">📅 Your AI-Powered 4-Week Training Plan</h2>
+      <h2 className="text-2xl font-bold mb-6">📅 EasyAthlete Dashboard</h2>
+
+      <div className="flex gap-4 mb-4">
+        <button
+          className={`px-4 py-2 rounded ${activeTab === 'schedule' ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}
+          onClick={() => setActiveTab('schedule')}
+        >
+          My Training Schedule
+        </button>
+        <button
+          className={`px-4 py-2 rounded ${activeTab === 'zones' ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}
+          onClick={() => setActiveTab('zones')}
+        >
+          My Heart Zones
+        </button>
+      </div>
 
       {loading && (
         <div className="text-center">
@@ -64,7 +105,7 @@ const TrainingSchedule = () => {
 
       {error && <p className="text-red-500 mt-4">{error}</p>}
 
-      {!loading && schedule.length > 0 && Object.keys(groupedByWeek).map((week) => (
+      {!loading && activeTab === 'schedule' && schedule.length > 0 && Object.keys(groupedByWeek).map((week) => (
         <div key={week} className="mb-8 mt-6">
           <h3 className="text-xl font-semibold mb-4">Week {week}</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -88,6 +129,8 @@ const TrainingSchedule = () => {
           </div>
         </div>
       ))}
+
+      {!loading && activeTab === 'zones' && <HeartZones />}
     </div>
   );
 };
