@@ -1,39 +1,44 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-const sportIcons = {
-  Running: '🏃‍♂️',
-  Cycling: '🚴‍♀️',
-  Swimming: '🏊‍♂️',
-  Walking: '🚶‍♂️',
-  Strength: '🏋️‍♂️',
-  'Strength Training': '🏋️‍♂️',
-};
-
-export default function TrainingSchedule({ onboarding }) {
-  const [schedule, setSchedule] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const [showSchedule, setShowSchedule] = useState(false);
+const TrainingSchedule = () => {
   const navigate = useNavigate();
+  const [schedule, setSchedule] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const userId = localStorage.getItem('easyathlete_user_id');
 
-  const fetchSchedule = async () => {
-    if (!onboarding?.userId) return;
+  useEffect(() => {
+    const fetchSchedule = async () => {
+      if (!userId) {
+        setError('❌ No user ID found. Please complete onboarding.');
+        setLoading(false);
+        return;
+      }
 
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await fetch(`https://easyathlete-backend-production.up.railway.app/ai-prompt/${onboarding.userId}`);
-      if (!res.ok) throw new Error('Failed to fetch training schedule');
-      const data = await res.json();
-      setSchedule(data.schedule);
-      setShowSchedule(true);
-    } catch (err) {
-      console.error('❌ Schedule generation failed:', err);
-      setError('Failed to generate training schedule.');
-    } finally {
-      setLoading(false);
-    }
+      try {
+        const res = await fetch(`https://easyathlete-backend-production.up.railway.app/ai-prompt/${userId}`);
+        if (!res.ok) throw new Error('Failed to fetch training schedule');
+        const data = await res.json();
+        setSchedule(data.schedule);
+      } catch (err) {
+        console.error('❌ Schedule generation failed:', err);
+        setError('Failed to generate training schedule.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchSchedule();
+  }, [userId]);
+
+  const sportIcons = {
+    Running: '🏃‍♂️',
+    Cycling: '🚴‍♀️',
+    Swimming: '🏊‍♂️',
+    Walking: '🚶‍♂️',
+    Strength: '🏋️‍♂️',
+    'Strength Training': '🏋️‍♂️'
   };
 
   const groupedByWeek = schedule.reduce((acc, session) => {
@@ -46,19 +51,20 @@ export default function TrainingSchedule({ onboarding }) {
     <div className="p-6">
       <h2 className="text-2xl font-bold mb-6">📅 Your AI-Powered 4-Week Training Plan</h2>
 
-      {!showSchedule && (
-        <button
-          onClick={fetchSchedule}
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-        >
-          🔮 Generate Your Training Schedule
-        </button>
+      {loading && (
+        <div className="text-center">
+          <p className="text-lg">🔮 Generating your training plan...</p>
+          <img
+            src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNGN0a2R2ZXg1OWM4YTh5MzBmcnBneDBpcnpoNGFwMnRzeHR4bzF4ZCZlcD12MV9naWZzX3NlYXJjaCZjdD1n/f3iwJFOVOwuy7K6FFw/giphy.gif"
+            alt="Loading"
+            className="mx-auto mt-4 w-40"
+          />
+        </div>
       )}
 
-      {loading && <p className="mt-4">⏳ Generating your schedule...</p>}
-      {error && <p className="text-red-500 mt-4">❌ {error}</p>}
+      {error && <p className="text-red-500 mt-4">{error}</p>}
 
-      {showSchedule && Object.keys(groupedByWeek).map(week => (
+      {!loading && schedule.length > 0 && Object.keys(groupedByWeek).map((week) => (
         <div key={week} className="mb-8 mt-6">
           <h3 className="text-xl font-semibold mb-4">Week {week}</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -68,14 +74,13 @@ export default function TrainingSchedule({ onboarding }) {
                 <p className="text-sm mb-1">
                   {sportIcons[session.sport] || '🏋️‍♂️'} {session.sport}
                 </p>
-                {session.sport !== 'Rest Day' && (
+                {session.sport !== 'Rest Day' ? (
                   <>
                     <p><strong>Duration:</strong> {session.durationMinutes} min</p>
                     <p><strong>Intensity:</strong> {session.intensityZone}</p>
                     <p className="text-sm mt-2 text-gray-600">{session.notes}</p>
                   </>
-                )}
-                {session.sport === 'Rest Day' && (
+                ) : (
                   <p className="italic text-gray-500">Rest and recovery</p>
                 )}
               </div>
@@ -83,17 +88,8 @@ export default function TrainingSchedule({ onboarding }) {
           </div>
         </div>
       ))}
-
-      {!showSchedule && (
-        <div className="mt-8">
-          <button
-            onClick={() => navigate('/connect')}
-            className="text-blue-600 underline"
-          >
-            🔁 Back to Connect Page
-          </button>
-        </div>
-      )}
     </div>
   );
-}
+};
+
+export default TrainingSchedule;
