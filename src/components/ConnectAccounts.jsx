@@ -6,6 +6,7 @@ const ConnectAccounts = () => {
   const [stravaConnected, setStravaConnected] = useState(false);
   const [fitFiles, setFitFiles] = useState([]);
   const [uploadStatus, setUploadStatus] = useState('');
+  const [readyToGenerate, setReadyToGenerate] = useState(false);
 
   const userId = localStorage.getItem('easyathlete_user_id');
 
@@ -59,7 +60,7 @@ const ConnectAccounts = () => {
       if (response.ok) {
         setUploadStatus('✅ Files uploaded successfully.');
         setFitFiles([]);
-        navigate('/schedule');
+        setReadyToGenerate(true);
       } else {
         setUploadStatus('❌ Upload failed. Try again.');
       }
@@ -67,6 +68,10 @@ const ConnectAccounts = () => {
       console.error(error);
       setUploadStatus('❌ An error occurred during upload.');
     }
+  };
+
+  const handleGenerateSchedule = () => {
+    navigate('/schedule');
   };
 
   return (
@@ -112,15 +117,15 @@ const ConnectAccounts = () => {
         </button>
 
         <button
-          className="mt-6 text-blue-600 underline"
-          onClick={() => navigate('/schedule')}
+          className={`mt-6 px-6 py-2 rounded text-white ${readyToGenerate ? 'bg-green-600 hover:bg-green-700' : 'bg-gray-400 cursor-not-allowed opacity-50'}`}
+          disabled={!readyToGenerate}
+          onClick={handleGenerateSchedule}
         >
-          Skip & Continue Without Connecting
+          🚀 Generate Your Training Schedule
         </button>
       </div>
     </div>
   );
 };
 
-// ✅ This is required for Vercel to resolve the import from App.jsx
 export default ConnectAccounts;
