@@ -5,6 +5,7 @@ import OnboardingChatbot from './components/OnboardingChatbot';
 import ConnectAccounts from './components/ConnectAccounts';
 import StravaRedirect from './components/StravaRedirect';
 import TrainingSchedule from './components/TrainingSchedule';
+import GenerateSchedule from './components/GenerateSchedule'; // ✅ New import
 
 const Home = ({ answers, onComplete }) => {
   const navigate = useNavigate();
@@ -54,6 +55,7 @@ export default function App() {
         <Route path="/connect" element={<ConnectAccounts />} />
         <Route path="/strava-redirect" element={<StravaRedirect />} />
         <Route path="/schedule" element={<TrainingSchedule />} />
+        <Route path="/generate" element={<GenerateSchedule />} /> {/* ✅ New route */}
       </Routes>
     </Router>
   );

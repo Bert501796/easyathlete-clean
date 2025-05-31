@@ -4,24 +4,31 @@ import { useNavigate } from 'react-router-dom';
 const TrainingSchedule = () => {
   const navigate = useNavigate();
   const [schedule, setSchedule] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('schedule');
   const [expandedIndex, setExpandedIndex] = useState(null);
   const userId = localStorage.getItem('easyathlete_user_id');
 
   useEffect(() => {
+    const cachedSchedule = localStorage.getItem('ai_training_schedule');
+    if (cachedSchedule) {
+      setSchedule(JSON.parse(cachedSchedule));
+      return;
+    }
+
     const fetchSchedule = async () => {
       if (!userId) {
         setError('❌ No user ID found. Please complete onboarding.');
-        setLoading(false);
         return;
       }
 
+      setLoading(true);
       try {
         const res = await fetch(`https://easyathlete-backend-production.up.railway.app/ai-prompt/${userId}`);
         if (!res.ok) throw new Error('Failed to fetch training schedule');
         const data = await res.json();
+        localStorage.setItem('ai_training_schedule', JSON.stringify(data.schedule));
         setSchedule(data.schedule);
       } catch (err) {
         console.error('❌ Schedule generation failed:', err);
