@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 
+console.log("🧭 StravaRedirect mounted");
+
 const StravaRedirect = () => {
   const [status, setStatus] = useState('Connecting to Strava...');
 
