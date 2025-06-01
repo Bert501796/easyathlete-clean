@@ -8,10 +8,12 @@ const StravaRedirect = () => {
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const code = urlParams.get('code');
+    const state = urlParams.get('state');
     const userId = localStorage.getItem('easyathlete_user_id');
 
     console.log("🚨 useEffect triggered");
     console.log("✅ code from URL:", code);
+    console.log("✅ state from URL:", state);
     console.log("👤 userId from localStorage:", userId);
 
     if (!code) {
@@ -20,11 +22,20 @@ const StravaRedirect = () => {
     }
 
     if (!userId) {
-      console.warn('❌ No user ID found. Redirecting to onboarding.');
-      setStatus('❌ No user session found. Please complete onboarding first.');
+      console.warn('❌ No user ID found. Redirecting to homepage.');
+      setStatus('❌ No onboarding data found. Returning to start...');
       setTimeout(() => {
-        window.location.href = '/onboarding';
-      }, 3000);
+        window.location.replace('/');
+      }, 2000);
+      return;
+    }
+
+    if (state && state !== userId) {
+      console.warn('⚠️ State mismatch. Redirecting to homepage.');
+      setStatus('⚠️ Authorization mismatch. Returning to start...');
+      setTimeout(() => {
+        window.location.replace('/');
+      }, 2000);
       return;
     }
 
