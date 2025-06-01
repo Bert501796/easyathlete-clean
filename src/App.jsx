@@ -1,6 +1,12 @@
 // src/App.jsx
-import React, { useState } from 'react';
-import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  useNavigate,
+  useLocation
+} from 'react-router-dom';
 import OnboardingChatbot from './components/OnboardingChatbot';
 import ConnectAccounts from './components/ConnectAccounts';
 import StravaRedirect from './components/StravaRedirect';
@@ -9,6 +15,22 @@ import GenerateSchedule from './components/GenerateSchedule'; // ✅ New import
 
 const Home = ({ answers, onComplete }) => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const userId = localStorage.getItem('easyathlete_user_id');
+
+  useEffect(() => {
+    console.log('🧭 Router loaded at:', location.pathname);
+    console.log('👤 LocalStorage userId:', userId);
+
+    if (!userId && !location.pathname.startsWith('/strava-redirect')) {
+      console.warn('⛔ No userId, redirecting to onboarding');
+      navigate('/');
+    }
+
+    if (location.pathname === '/' && userId && !answers) {
+      console.warn('⚠️ Unexpected redirect to onboarding, but userId exists. Check onboarding_answers in localStorage.');
+    }
+  }, [location.pathname, userId, answers, navigate]);
 
   if (!answers) {
     return <OnboardingChatbot onComplete={onComplete} />;
