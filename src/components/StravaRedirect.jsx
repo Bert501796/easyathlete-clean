@@ -10,35 +10,43 @@ const StravaRedirect = () => {
     const code = urlParams.get('code');
     const state = urlParams.get('state');
     const userId = localStorage.getItem('easyathlete_user_id');
+    const onboardingAnswers = localStorage.getItem('onboarding_answers');
 
     console.log("🚨 useEffect triggered");
     console.log("✅ code from URL:", code);
     console.log("✅ state from URL:", state);
     console.log("👤 userId from localStorage:", userId);
+    console.log("📋 onboarding_answers:", onboardingAnswers ? '✅ Present' : '❌ Missing');
 
+    // 1. Check if userId or onboarding is missing
+    if (!userId || !onboardingAnswers) {
+      console.warn('❌ No onboarding session. Redirecting...');
+      setStatus('❌ Onboarding not complete. Returning to start...');
+      setTimeout(() => {
+        localStorage.clear();
+        window.location.replace('/');
+      }, 2000);
+      return;
+    }
+
+    // 2. Code must be present
     if (!code) {
       setStatus('❌ Authorization code not found in URL.');
       return;
     }
 
-    if (!userId) {
-      console.warn('❌ No user ID found. Redirecting to homepage.');
-      setStatus('❌ No onboarding data found. Returning to start...');
-      setTimeout(() => {
-        window.location.replace('/');
-      }, 2000);
-      return;
-    }
-
+    // 3. Optional: State validation (basic anti-CSRF)
     if (state && state !== userId) {
-      console.warn('⚠️ State mismatch. Redirecting to homepage.');
+      console.warn('⚠️ State does not match userId. Redirecting...');
       setStatus('⚠️ Authorization mismatch. Returning to start...');
       setTimeout(() => {
+        localStorage.clear();
         window.location.replace('/');
       }, 2000);
       return;
     }
 
+    // 4. Exchange the code
     const exchangeToken = async () => {
       try {
         console.log("📤 Sending code + userId to backend...");
