@@ -23,9 +23,12 @@ const ConnectAccounts = () => {
       ? 'http://localhost:5173/strava-redirect'
       : 'https://easyathlete.vercel.app/strava-redirect';
 
-  const stravaAuthUrl = `https://www.strava.com/oauth/authorize?client_id=${clientId}&response_type=code&redirect_uri=${encodeURIComponent(
-    redirectUri
-  )}&approval_prompt=auto&scope=read,activity:read_all`;
+  // Add userId to state param if present
+  const stravaAuthUrl = userId
+    ? `https://www.strava.com/oauth/authorize?client_id=${clientId}&response_type=code&redirect_uri=${encodeURIComponent(
+        redirectUri
+      )}&approval_prompt=auto&scope=read,activity:read_all&state=${userId}`
+    : '';
 
   const handleFileChange = (event) => {
     setFitFiles(Array.from(event.target.files));
@@ -53,7 +56,7 @@ const ConnectAccounts = () => {
         `https://easyathlete-backend-production.up.railway.app/upload-fit?userId=${userId}`,
         {
           method: 'POST',
-          body: formData
+          body: formData,
         }
       );
 
@@ -82,13 +85,15 @@ const ConnectAccounts = () => {
       <div className="flex flex-col gap-4 items-center">
         {stravaConnected ? (
           <p className="text-green-600">✅ Strava Connected</p>
-        ) : (
+        ) : userId ? (
           <a
             href={stravaAuthUrl}
             className="bg-orange-500 text-white px-6 py-2 rounded hover:bg-orange-600"
           >
             🔗 Connect with Strava
           </a>
+        ) : (
+          <p className="text-red-500">❌ Please complete onboarding before connecting Strava.</p>
         )}
 
         <div className="w-full text-center">
