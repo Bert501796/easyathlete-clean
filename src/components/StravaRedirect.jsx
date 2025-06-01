@@ -6,21 +6,33 @@ const StravaRedirect = () => {
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const code = urlParams.get('code');
+    const userId = localStorage.getItem('easyathlete_user_id');
+
     console.log("🚨 useEffect triggered");
     console.log("✅ code from URL:", code);
+    console.log("👤 userId from localStorage:", userId);
 
     if (!code) {
       setStatus('❌ Authorization code not found in URL.');
       return;
     }
 
+    if (!userId) {
+      console.warn('❌ No user ID found. Redirecting to onboarding.');
+      setStatus('❌ No user session found. Please complete onboarding first.');
+      setTimeout(() => {
+        window.location.href = '/onboarding';
+      }, 3000);
+      return;
+    }
+
     const exchangeToken = async () => {
       try {
-        console.log("📤 Sending code to backend...");
+        console.log("📤 Sending code + userId to backend...");
         const response = await fetch(`${import.meta.env.VITE_API_URL}/strava/exchange`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ code }),
+          body: JSON.stringify({ code, userId }),
         });
 
         const data = await response.json();
