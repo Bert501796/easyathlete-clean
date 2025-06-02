@@ -61,17 +61,30 @@ export default function App() {
     return stored ? JSON.parse(stored) : null;
   });
 
-  const handleOnboardingComplete = (data) => {
-    // Only create user ID here when onboarding is submitted
-    if (!localStorage.getItem('easyathlete_user_id')) {
-      const userId = `user_${crypto.randomUUID()}`;
+  const handleOnboardingComplete = async (data) => {
+    let userId = localStorage.getItem('easyathlete_user_id');
+
+    if (!userId) {
+      userId = `user_${crypto.randomUUID()}`;
       localStorage.setItem('easyathlete_user_id', userId);
       console.log('🆕 Generated userId:', userId);
     }
 
-    console.log('✅ Onboarding complete:', data);
-    localStorage.setItem('onboarding_answers', JSON.stringify(data));
-    setAnswers(data);
+    console.log('📤 Submitting onboarding with:', { userId, onboardingData: data });
+
+    try {
+      await fetch('https://easyathlete-backend-production.up.railway.app/upload-onboarding', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, onboardingData: data }),
+      });
+
+      console.log('✅ Onboarding complete:', data);
+      localStorage.setItem('onboarding_answers', JSON.stringify(data));
+      setAnswers(data);
+    } catch (err) {
+      console.error('❌ Failed to upload onboarding:', err);
+    }
   };
 
   return (
