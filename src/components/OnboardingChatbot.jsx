@@ -4,117 +4,81 @@ import { useNavigate } from 'react-router-dom';
 
 export default function OnboardingChatbot({ onComplete }) {
   const navigate = useNavigate();
-  const [messages, setMessages] = useState([
-    { sender: 'bot', text: 'Hi there! What’s your main fitness goal?' }
-  ]);
-  const [userInput, setUserInput] = useState('');
+  const [messages, setMessages] = useState([]);
+  const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
-  const [conversation, setConversation] = useState([]);
-  const userId = localStorage.getItem('easyathlete_user_id');
 
   useEffect(() => {
-    if (!userId) {
+    const uid = localStorage.getItem('easyathlete_user_id');
+    if (!uid) {
       console.warn('⛔ No userId found, redirecting to homepage.');
       navigate('/');
+    } else {
+      setMessages([{ role: 'assistant', content: 'Hi! What’s your main goal for training right now?' }]);
     }
-  }, [navigate, userId]);
+  }, [navigate]);
 
-  const handleSend = async () => {
-    if (!userInput.trim()) return;
-
-    const updatedMessages = [...messages, { sender: 'user', text: userInput }];
-    setMessages(updatedMessages);
-    setUserInput('');
+  const sendMessage = async (text) => {
+    const userId = localStorage.getItem('easyathlete_user_id');
+    const newMessages = [...messages, { role: 'user', content: text }];
+    setMessages(newMessages);
+    setInput('');
     setLoading(true);
 
     try {
       const res = await fetch('https://easyathlete-backend-production.up.railway.app/onboarding-bot', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          userId,
-          conversation: updatedMessages
-        })
+        body: JSON.stringify({ userId, conversation: newMessages })
       });
 
       const data = await res.json();
-      const reply = data.reply;
-      const finished = data.finished;
-      const updated = [...updatedMessages, { sender: 'bot', text: reply }];
+      setMessages([...newMessages, { role: 'assistant', content: data.reply }]);
 
-      setMessages(updated);
-      setConversation(updated);
-      setLoading(false);
-
-      if (finished) {
-        await submitAndComplete(userId, updated);
+      if (data.finished) {
+        console.log('✅ Onboarding complete:', newMessages);
+        await uploadFinalOnboarding(userId, newMessages);
+        onComplete(newMessages);
       }
     } catch (err) {
-      console.error('❌ Error fetching bot reply:', err);
+      console.error('❌ Error sending onboarding message:', err);
+    } finally {
       setLoading(false);
     }
   };
 
-  const submitAndComplete = async (userId, fullConversation) => {
-    console.log('📤 Finalizing onboarding:', { userId, conversation: fullConversation });
-
+  const uploadFinalOnboarding = async (userId, conversation) => {
     try {
-      const response = await fetch('https://easyathlete-backend-production.up.railway.app/upload-onboarding', {
+      await fetch('https://easyathlete-backend-production.up.railway.app/upload-onboarding', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId, onboardingData: fullConversation })
+        body: JSON.stringify({ userId, onboardingData: conversation })
       });
-
-      if (!response.ok) {
-        console.error('❌ Failed to upload onboarding data');
-        return;
-      }
-
-      console.log('✅ Onboarding data uploaded');
-      onComplete(fullConversation);
-    } catch (error) {
-      console.error('❌ Error uploading onboarding data:', error);
+    } catch (err) {
+      console.error('❌ Failed to upload final onboarding conversation:', err);
     }
   };
 
   return (
     <div className="max-w-xl mx-auto p-6 space-y-4">
-      <div className="space-y-2">
+      <div className="space-y-3">
         {messages.map((msg, idx) => (
-          <div
-            key={idx}
-            className={`p-2 rounded max-w-xs ${
-              msg.sender === 'user' ? 'bg-blue-100 ml-auto text-right' : 'bg-gray-200'
-            }`}
-          >
-            {msg.text}
+          <div key={idx} className={`p-2 rounded ${msg.role === 'user' ? 'bg-blue-100 text-right' : 'bg-gray-100 text-left'}`}>
+            {msg.content}
           </div>
         ))}
       </div>
 
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          handleSend();
-        }}
-        className="flex mt-4"
-      >
-        <input
-          type="text"
-          value={userInput}
-          onChange={(e) => setUserInput(e.target.value)}
-          className="flex-1 border rounded p-2"
-          placeholder="Type your answer..."
-          disabled={loading}
-        />
-        <button
-          type="submit"
-          disabled={loading}
-          className="ml-2 px-4 py-2 bg-blue-600 text-white rounded disabled:opacity-50"
-        >
-          Send
-        </button>
-      </form>
+      <input
+        className="border p-2 w-full rounded mt-4"
+        value={input}
+        onChange={(e) => setInput(e.target.value)}
+        onKeyDown={(e) => e.key === 'Enter' && input && !loading && sendMessage(input)}
+        placeholder="Type your answer and press Enter"
+        disabled={loading}
+      />
+
+      {loading && <div className="text-sm text-gray-500">Thinking...</div>}
     </div>
   );
 }
