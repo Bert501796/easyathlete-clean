@@ -1,5 +1,6 @@
 // src/pages/Insights/Insights.jsx
 import React, { useEffect, useState } from 'react';
+import { fetchLatestInsightsJson } from '../../utils/fetchInsightsData';
 import {
   BarChart,
   Bar,
@@ -18,11 +19,10 @@ const Insights = () => {
 
   useEffect(() => {
     const fetchActivities = async () => {
+      if (!userId) return;
+
       try {
-        const res = await fetch(
-          `https://res.cloudinary.com/dcll5atsv/raw/upload/easyathlete/${userId}/strava/latest_strava.json`
-        );
-        const data = await res.json();
+        const data = await fetchLatestInsightsJson(userId);
         setActivities(data);
 
         const types = Array.from(new Set(data.map((a) => a.type))).sort();
@@ -39,7 +39,6 @@ const Insights = () => {
     ? activities
     : activities.filter((a) => a.type === selectedType);
 
-  // Derived metrics for visualizations
   const chartData = filtered.map((a) => ({
     name: a.name || a.start_date?.slice(0, 10),
     paceMinPerKm: a.average_speed ? +(1000 / (a.average_speed * 60)).toFixed(2) : null,
