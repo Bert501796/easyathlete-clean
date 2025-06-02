@@ -22,64 +22,79 @@ const StravaRedirect = () => {
   console.log("✅ code from URL:", code);
   console.log("✅ state from URL:", state);
 
-  useEffect(() => {
-    const userId = localStorage.getItem('easyathlete_user_id');
-    console.log("👤 userId from localStorage:", userId);
+useEffect(() => {
+  console.log('🧭 StravaRedirect useEffect triggered');
 
-    if (!userId) {
-      console.warn('❌ No user ID found. Redirecting to homepage.');
-      setStatus('❌ No onboarding data found. Returning to start...');
-      setTimeout(() => {
-        window.location.replace('/');
-      }, 2000);
-      return;
-    }
+  const urlParams = new URLSearchParams(window.location.search);
+  const code = urlParams.get('code');
+  const state = urlParams.get('state');
 
-    if (state && state !== userId) {
-      console.warn('⚠️ State mismatch. Redirecting to homepage.');
-      setStatus('⚠️ Authorization mismatch. Returning to start...');
-      setTimeout(() => {
-        window.location.replace('/');
-      }, 2000);
-      return;
-    }
+  console.log("✅ code from URL:", code);
+  console.log("✅ state from URL:", state);
 
-    const exchangeToken = async () => {
-      try {
-        setStatus('🔄 Exchanging code with backend...');
-        const response = await fetch(`${import.meta.env.VITE_API_URL}/strava/exchange`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ code, userId }),
-        });
+  const userId = localStorage.getItem('easyathlete_user_id');
+  console.log("👤 userId from localStorage:", userId);
 
-        const data = await response.json();
+  if (!code) {
+    setStatus('❌ Authorization code not found in URL.');
+    return;
+  }
 
-        if (!response.ok || !data.access_token) {
-          throw new Error(data.error || 'Failed to retrieve token');
-        }
+  if (!userId) {
+    console.warn('❌ No user ID found. Redirecting to homepage.');
+    setStatus('❌ No onboarding data found. Returning to start...');
+    setTimeout(() => {
+      window.location.replace('/');
+    }, 2000);
+    return;
+  }
 
-        const accessToken = data.access_token;
-        console.log("📥 Received access token:", accessToken);
-        localStorage.setItem('strava_token', accessToken);
+  if (state && state !== userId) {
+    console.warn('⚠️ State mismatch. Redirecting to homepage.');
+    setStatus('⚠️ Authorization mismatch. Returning to start...');
+    setTimeout(() => {
+      window.location.replace('/');
+    }, 2000);
+    return;
+  }
 
-        const activitiesRes = await fetch('https://www.strava.com/api/v3/athlete/activities?per_page=100', {
-          headers: { Authorization: `Bearer ${accessToken}` },
-        });
+  const exchangeToken = async () => {
+    try {
+      setStatus('🔄 Exchanging code with backend...');
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/strava/exchange`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code, userId }),
+      });
 
-        const activities = await activitiesRes.json();
-        console.log("✅ Activities fetched:", activities);
+      const data = await response.json();
 
-        localStorage.setItem('strava_activities', JSON.stringify(activities));
-        window.location.href = '/connect';
-      } catch (error) {
-        console.error("❌ Error during Strava redirect flow:", error);
-        setStatus(`❌ ${error.message}`);
+      if (!response.ok || !data.access_token) {
+        throw new Error(data.error || 'Failed to retrieve token');
       }
-    };
 
-    exchangeToken();
-  }, [code, state]);
+      const accessToken = data.access_token;
+      console.log("📥 Received access token:", accessToken);
+      localStorage.setItem('strava_token', accessToken);
+
+      const activitiesRes = await fetch('https://www.strava.com/api/v3/athlete/activities?per_page=100', {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
+
+      const activities = await activitiesRes.json();
+      console.log("✅ Activities fetched:", activities);
+
+      localStorage.setItem('strava_activities', JSON.stringify(activities));
+      window.location.href = '/connect';
+    } catch (error) {
+      console.error("❌ Error during Strava redirect flow:", error);
+      setStatus(`❌ ${error.message}`);
+    }
+  };
+
+  exchangeToken();
+}, []);
+
 
   return (
     <div className="max-w-xl mx-auto p-6 text-center">
