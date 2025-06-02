@@ -11,6 +11,8 @@
     "@vitejs/plugin-react": "^4.5.0",
     "autoprefixer": "^10.4.14",
     "date-fns": "^4.1.0",
+    "echarts": "^5.6.0",
+    "echarts-for-react": "^3.0.2",
     "openai": "^4.103.0",
     "postcss": "^8.4.21",
     "react": "^18.2.0",

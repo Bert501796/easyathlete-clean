@@ -13,6 +13,8 @@ import {
   LineChart,
   Line
 } from 'recharts';
+import FitnessTrendEChart from './components/FitnessTrendEChart';
+
 
 const timeframes = [
   { label: 'Last 7 days', days: 7 },
@@ -105,22 +107,22 @@ const Insights = () => {
     </div>
   );
 
-  const renderLineChart = (title, dataKey, color, explanation) => (
-    <div className="mb-10">
-      <h2 className="text-lg font-semibold mb-1">{title}</h2>
-      <p className="text-sm text-gray-600 mb-2">{explanation}</p>
-      <ResponsiveContainer width="100%" height={300}>
-        <LineChart data={chartData} margin={{ top: 10, right: 30, left: 0, bottom: 5 }}>
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="name" />
-          <YAxis />
-          <Tooltip />
-          <Legend />
-          <Line type="monotone" dataKey={dataKey} stroke={color} strokeWidth={2} dot={false} />
-        </LineChart>
-      </ResponsiveContainer>
-    </div>
-  );
+    const renderLineChart = (title, dataKey, color, explanation) => (
+        <div className="mb-10">
+            <h2 className="text-lg font-semibold mb-1">{title}</h2>
+            <p className="text-sm text-gray-600 mb-2">{explanation}</p>
+            <ResponsiveContainer width="100%" height={300}>
+                <LineChart data={chartData} margin={{ top: 10, right: 30, left: 0, bottom: 5 }}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="name" />
+                    <YAxis />
+                    <Tooltip />
+                    <Legend />
+                    <Line type="monotone" dataKey={dataKey} stroke={color} strokeWidth={2} dot={false} />
+                </LineChart>
+            </ResponsiveContainer>
+        </div>
+    );
 
   const renderStackedHRZoneChart = () => (
     <div className="mb-10">
@@ -204,6 +206,16 @@ const Insights = () => {
         '#d84e4e',
         'Estimates workout intensity based on power or heart rate data.'
       )}
+      
+      {filtered.length > 0 && (
+  <div className="mb-10">
+    <h2 className="text-lg font-semibold mb-1">Fitness Trend Over Time</h2>
+    <FitnessTrendEChart data={chartData} />
+    <p className="text-sm text-gray-600 mt-2">
+      Tracks overall fitness score to visualize long-term improvement or decline.
+    </p>
+  </div>
+)}
 
       {renderStackedHRZoneChart()}
     </div>
