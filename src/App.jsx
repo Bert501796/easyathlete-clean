@@ -61,15 +61,18 @@ export default function App() {
     return stored ? JSON.parse(stored) : null;
   });
 
-const handleOnboardingComplete = (data) => {
-  const userId = `user_${crypto.randomUUID()}`;
-  console.log('✅ Onboarding complete:', data, 'with userId:', userId);
+  const handleOnboardingComplete = (data) => {
+    // Only create user ID here when onboarding is submitted
+    if (!localStorage.getItem('easyathlete_user_id')) {
+      const userId = `user_${crypto.randomUUID()}`;
+      localStorage.setItem('easyathlete_user_id', userId);
+      console.log('🆕 Generated userId:', userId);
+    }
 
-  localStorage.setItem('onboarding_answers', JSON.stringify(data));
-  localStorage.setItem('easyathlete_user_id', userId); // <-- Only set here
-  setAnswers(data);
-};
-
+    console.log('✅ Onboarding complete:', data);
+    localStorage.setItem('onboarding_answers', JSON.stringify(data));
+    setAnswers(data);
+  };
 
   return (
     <Router>

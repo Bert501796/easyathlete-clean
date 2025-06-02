@@ -1,14 +1,6 @@
 // src/components/OnboardingChatbot.jsx
-import React, { useState, useMemo } from 'react';
-
-const getOrCreateUserId = () => {
-  let userId = localStorage.getItem('easyathlete_user_id');
-  if (!userId) {
-    userId = `user_${crypto.randomUUID()}`;
-    localStorage.setItem('easyathlete_user_id', userId);
-  }
-  return userId;
-};
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const questions = [
   {
@@ -47,12 +39,20 @@ const questions = [
 ];
 
 export default function OnboardingChatbot({ onComplete }) {
+  const navigate = useNavigate();
   const [step, setStep] = useState(0);
   const [answers, setAnswers] = useState({});
   const [input, setInput] = useState('');
   const [multiSelect, setMultiSelect] = useState([]);
 
-  const userId = useMemo(() => getOrCreateUserId(), []);
+  const userId = localStorage.getItem('easyathlete_user_id');
+
+  useEffect(() => {
+    if (!userId) {
+      console.warn('⛔ No userId found, redirecting to homepage.');
+      navigate('/');
+    }
+  }, [userId, navigate]);
 
   const current = questions[step];
 
