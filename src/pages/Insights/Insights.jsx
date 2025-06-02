@@ -10,6 +10,7 @@ import {
   Tooltip,
   ResponsiveContainer,
   Legend,
+  LineChart,
   Line
 } from 'recharts';
 
@@ -35,9 +36,14 @@ const Insights = () => {
 
       try {
         const data = await fetchLatestInsightsJson(userId);
-        setActivities(data);
 
-        const types = Array.from(new Set(data.map((a) => a.type))).sort();
+        const normalized = data.map((a) => ({
+          ...a,
+          type: a.type === 'VirtualRide' ? 'Ride' : a.type
+        }));
+
+        setActivities(normalized);
+        const types = Array.from(new Set(normalized.map((a) => a.type))).sort();
         setActivityTypes(['All', ...types]);
       } catch (err) {
         console.error('❌ Failed to fetch activity insights', err);
@@ -56,17 +62,23 @@ const Insights = () => {
     return matchType && matchTime;
   });
 
-  const chartData = filtered.map((a) => ({
-    name: a.start_date?.slice(0, 10),
-    paceMinPerKm: a.average_speed ? +(1000 / (a.average_speed * 60)).toFixed(2) : null,
-    hrEfficiency: a.average_heartrate && a.average_speed
-      ? +(a.average_speed / a.average_heartrate).toFixed(3)
-      : null,
-    elevationPerKm: a.total_elevation_gain && a.distance
-      ? +(a.total_elevation_gain / (a.distance / 1000)).toFixed(1)
-      : null,
-    estimatedLoad: a.kilojoules || a.suffer_score || null
-  })).filter(d => d.paceMinPerKm !== null);
+  const chartData = [...filtered]
+    .sort((a, b) => new Date(a.start_date) - new Date(b.start_date))
+    .map((a) => ({
+      name: a.start_date?.slice(0, 10),
+      paceMinPerKm: a.average_speed ? +(1000 / (a.average_speed * 60)).toFixed(2) : null,
+      hrEfficiency: a.average_heartrate && a.average_speed
+        ? +(a.average_speed / a.average_heartrate).toFixed(3)
+        : null,
+      elevationPerKm: a.total_elevation_gain && a.distance
+        ? +(a.total_elevation_gain / (a.distance / 1000)).toFixed(1)
+        : null,
+      estimatedLoad: a.kilojoules || a.suffer_score || null,
+      fitness: a.fitness_score || null,
+      week: a.start_date?.slice(0, 10).slice(0, 7),
+      timeInHRZone: a.time_in_heart_rate_zone || null
+    }))
+    .filter(d => d.paceMinPerKm !== null);
 
   const renderChart = (title, dataKey, color, explanation) => (
     <div className="mb-10">
@@ -80,8 +92,24 @@ const Insights = () => {
           <Tooltip />
           <Legend />
           <Bar dataKey={dataKey} fill={color} name={title} />
-          <Line type="monotone" dataKey={dataKey} stroke="#000" dot={false} name="Trend" />
         </BarChart>
+      </ResponsiveContainer>
+    </div>
+  );
+
+  const renderLineChart = (title, dataKey, color, explanation) => (
+    <div className="mb-10">
+      <h2 className="text-lg font-semibold mb-1">{title}</h2>
+      <p className="text-sm text-gray-600 mb-2">{explanation}</p>
+      <ResponsiveContainer width="100%" height={300}>
+        <LineChart data={chartData} margin={{ top: 10, right: 30, left: 0, bottom: 5 }}>
+          <CartesianGrid strokeDasharray="3 3" />
+          <XAxis dataKey="name" />
+          <YAxis />
+          <Tooltip />
+          <Legend />
+          <Line type="monotone" dataKey={dataKey} stroke={color} strokeWidth={2} dot={false} />
+        </LineChart>
       </ResponsiveContainer>
     </div>
   );
@@ -144,6 +172,20 @@ const Insights = () => {
         'estimatedLoad',
         '#d84e4e',
         'Estimates workout intensity based on power or heart rate data.'
+      )}
+
+      {renderLineChart(
+        'Fitness Trend Over Time',
+        'fitness',
+        '#3366cc',
+        'Tracks overall fitness score to visualize long-term improvement or decline.'
+      )}
+
+      {renderChart(
+        'Time in Heart Rate Zone',
+        'timeInHRZone',
+        '#ff7f50',
+        'Displays time spent in key heart rate zones, helpful for gauging aerobic vs. anaerobic effort.'
       )}
     </div>
   );
