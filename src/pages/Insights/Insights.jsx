@@ -13,7 +13,7 @@ import {
   LineChart,
   Line
 } from 'recharts';
-import FitnessTrendEChart from './components/FitnessTrendEChart';
+import HeartRateEfficiencyChart from './components/HeartRateEfficiencyChart';
 
 
 const timeframes = [
@@ -186,12 +186,21 @@ const Insights = () => {
         'Shows how fast you ran or cycled per kilometer. Lower values indicate faster paces.'
       )}
 
-      {renderChart(
+      {/* {renderChart(
         'Heart Rate Efficiency',
         'hrEfficiency',
         '#82ca9d',
         'Represents how much speed you achieve per heartbeat. Higher values suggest better cardiovascular efficiency.'
-      )}
+      )} */}
+
+{filtered.length > 0 && (
+  <div className="mb-10">
+    <HeartRateEfficiencyChart data={chartData} />
+    <p className="text-sm text-gray-600 mt-2">
+      Represents how much speed you achieve per heartbeat. Higher values suggest better cardiovascular efficiency.
+    </p>
+  </div>
+)}
 
       {renderChart(
         'Elevation per km',
@@ -207,16 +216,6 @@ const Insights = () => {
         'Estimates workout intensity based on power or heart rate data.'
       )}
       
-      {filtered.length > 0 && (
-  <div className="mb-10">
-    <h2 className="text-lg font-semibold mb-1">Fitness Trend Over Time</h2>
-    <FitnessTrendEChart data={chartData} />
-    <p className="text-sm text-gray-600 mt-2">
-      Tracks overall fitness score to visualize long-term improvement or decline.
-    </p>
-  </div>
-)}
-
       {renderStackedHRZoneChart()}
     </div>
   );
