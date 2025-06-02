@@ -66,6 +66,7 @@ const Insights = () => {
     .sort((a, b) => new Date(a.start_date) - new Date(b.start_date))
     .map((a) => {
       const zoneSeconds = a.hrZoneBuckets || [];
+      const totalZoneTime = zoneSeconds.reduce((sum, val) => sum + val, 0) || 1;
       return {
         name: a.start_date?.slice(0, 10),
         paceMinPerKm: a.average_speed ? +(1000 / (a.average_speed * 60)).toFixed(2) : null,
@@ -78,11 +79,11 @@ const Insights = () => {
         estimatedLoad: a.kilojoules || a.suffer_score || null,
         fitness: a.fitness_score || null,
         week: a.start_date?.slice(0, 10).slice(0, 7),
-        zone1: zoneSeconds[0] > 0 ? zoneSeconds[0] : undefined,
-        zone2: zoneSeconds[1] > 0 ? zoneSeconds[1] : undefined,
-        zone3: zoneSeconds[2] > 0 ? zoneSeconds[2] : undefined,
-        zone4: zoneSeconds[3] > 0 ? zoneSeconds[3] : undefined,
-        zone5: zoneSeconds[4] > 0 ? zoneSeconds[4] : undefined
+        zone1: zoneSeconds[0] > 0 ? +(zoneSeconds[0] / totalZoneTime * 100).toFixed(1) : undefined,
+        zone2: zoneSeconds[1] > 0 ? +(zoneSeconds[1] / totalZoneTime * 100).toFixed(1) : undefined,
+        zone3: zoneSeconds[2] > 0 ? +(zoneSeconds[2] / totalZoneTime * 100).toFixed(1) : undefined,
+        zone4: zoneSeconds[3] > 0 ? +(zoneSeconds[3] / totalZoneTime * 100).toFixed(1) : undefined,
+        zone5: zoneSeconds[4] > 0 ? +(zoneSeconds[4] / totalZoneTime * 100).toFixed(1) : undefined
       };
     })
     .filter(d => d.paceMinPerKm !== null);
@@ -125,13 +126,13 @@ const Insights = () => {
     <div className="mb-10">
       <h2 className="text-lg font-semibold mb-1">Heart Rate Zone Breakdown</h2>
       <p className="text-sm text-gray-600 mb-2">
-        Time spent in each HR zone during workouts. Helps evaluate training intensity and distribution.
+        Percentage of time spent in each HR zone during workouts. Helps evaluate training intensity and distribution.
       </p>
       <ResponsiveContainer width="100%" height={300}>
         <BarChart data={chartData} margin={{ top: 10, right: 30, left: 0, bottom: 5 }}>
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis dataKey="name" />
-          <YAxis />
+          <YAxis unit="%" />
           <Tooltip />
           <Legend />
           <Bar dataKey="zone5" stackId="a" fill="#313695" name="Zone 5" />
@@ -204,7 +205,7 @@ const Insights = () => {
         'Estimates workout intensity based on power or heart rate data.'
       )}
 
-            {renderStackedHRZoneChart()}
+      {renderStackedHRZoneChart()}
     </div>
   );
 };
