@@ -9,48 +9,40 @@ export default function OnboardingChatbot({ onComplete }) {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    const uid = localStorage.getItem('easyathlete_user_id');
-    if (!uid) {
-      console.warn('⛔ No userId found, redirecting to homepage.');
-      navigate('/');
-    } else {
-      setMessages([{ role: 'assistant', content: 'Hi! What’s your main goal for training right now?' }]);
-    }
-  }, [navigate]);
+    setMessages([{ role: 'assistant', content: 'Hi! What’s your main goal for training right now?' }]);
+  }, []);
 
-const sendMessage = async (text) => {
-  const userId = localStorage.getItem('easyathlete_user_id');
-  setInput('');
-  setLoading(true);
+  const sendMessage = async (text) => {
+    const updatedMessages = [...messages, { role: 'user', content: text }];
+    setMessages(updatedMessages);
+    setInput('');
+    setLoading(true);
 
-  setMessages(prevMessages => {
-    const newMessages = [...prevMessages, { role: 'user', content: text }];
-
-    fetch('https://easyathlete-backend-production.up.railway.app/onboarding-bot', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userId, conversation: newMessages })
-    })
-      .then(res => res.json())
-      .then(async (data) => {
-        setMessages([...newMessages, { role: 'assistant', content: data.reply }]);
-
-        if (data.finished) {
-          console.log('✅ Onboarding complete:', newMessages);
-          await uploadFinalOnboarding(userId, newMessages);
-          onComplete(newMessages);
-        }
-      })
-      .catch((err) => {
-        console.error('❌ Error sending onboarding message:', err);
-      })
-      .finally(() => {
-        setLoading(false);
+    try {
+      const res = await fetch('https://easyathlete-backend-production.up.railway.app/onboarding-bot', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ conversation: updatedMessages })
       });
 
-    return newMessages;
-  });
-};
+      const data = await res.json();
+      const newMessages = [...updatedMessages, { role: 'assistant', content: data.reply }];
+      setMessages(newMessages);
+
+      if (data.finished) {
+        const userId = `user_${crypto.randomUUID()}`;
+        localStorage.setItem('easyathlete_user_id', userId);
+        console.log('🆕 Generated userId:', userId);
+
+        await uploadFinalOnboarding(userId, newMessages);
+        onComplete(newMessages);
+      }
+    } catch (err) {
+      console.error('❌ Error sending onboarding message:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const uploadFinalOnboarding = async (userId, conversation) => {
     try {
