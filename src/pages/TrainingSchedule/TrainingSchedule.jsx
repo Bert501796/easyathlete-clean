@@ -117,9 +117,9 @@ const TrainingSchedule = () => {
         </button>
         <button
           className={`px-4 py-2 rounded ${activeTab === 'zones' ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}
-          onClick={() => setActiveTab('zones')}
+          onClick={() => setActiveTab('insights')}
         >
-          My Heart Zones
+          Insights
         </button>
       </div>
 
@@ -182,7 +182,7 @@ const TrainingSchedule = () => {
         </div>
       ))}
 
-      {!loading && activeTab === 'zones' && <HeartZones />}
+      {!loading && activeTab === 'insights' && <HeartZones />}
     </div>
   );
 };
