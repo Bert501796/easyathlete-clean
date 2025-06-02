@@ -45,14 +45,13 @@ export default function OnboardingChatbot({ onComplete }) {
   const [input, setInput] = useState('');
   const [multiSelect, setMultiSelect] = useState([]);
 
-  const userId = localStorage.getItem('easyathlete_user_id');
-
   useEffect(() => {
-    if (!userId) {
+    const uid = localStorage.getItem('easyathlete_user_id');
+    if (!uid) {
       console.warn('⛔ No userId found, redirecting to homepage.');
       navigate('/');
     }
-  }, [userId, navigate]);
+  }, [navigate]);
 
   const current = questions[step];
 
@@ -65,7 +64,15 @@ export default function OnboardingChatbot({ onComplete }) {
     if (step + 1 < questions.length) {
       setStep(step + 1);
     } else {
-      submitOnboardingToBackend(updated);
+      // Generate userId if missing before submitting
+      let userId = localStorage.getItem('easyathlete_user_id');
+      if (!userId) {
+        userId = `user_${crypto.randomUUID()}`;
+        localStorage.setItem('easyathlete_user_id', userId);
+        console.log('🆕 (Chatbot) Generated userId:', userId);
+      }
+
+      submitOnboardingToBackend(userId, updated);
       onComplete(updated);
     }
   };
@@ -76,7 +83,7 @@ export default function OnboardingChatbot({ onComplete }) {
     );
   };
 
-  const submitOnboardingToBackend = async (data) => {
+  const submitOnboardingToBackend = async (userId, data) => {
     console.log('📤 Submitting onboarding with:', { userId, onboardingData: data });
 
     try {
