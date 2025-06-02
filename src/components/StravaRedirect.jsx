@@ -24,6 +24,11 @@ const StravaRedirect = () => {
   useEffect(() => {
     console.log('🧭 useEffect triggered in StravaRedirect');
 
+    // 🚫 Clean up unwanted hash from Strava redirect
+if (window.location.hash && window.location.hash === '#_=_') {
+  history.replaceState(null, '', window.location.pathname + window.location.search);
+}
+
     const urlParams = new URLSearchParams(window.location.search);
     const code = urlParams.get('code');
     const state = urlParams.get('state');
