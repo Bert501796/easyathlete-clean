@@ -78,11 +78,11 @@ const Insights = () => {
         estimatedLoad: a.kilojoules || a.suffer_score || null,
         fitness: a.fitness_score || null,
         week: a.start_date?.slice(0, 10).slice(0, 7),
-        zone1: zoneSeconds[0] || 0,
-        zone2: zoneSeconds[1] || 0,
-        zone3: zoneSeconds[2] || 0,
-        zone4: zoneSeconds[3] || 0,
-        zone5: zoneSeconds[4] || 0
+        zone1: zoneSeconds[0] > 0 ? zoneSeconds[0] : undefined,
+        zone2: zoneSeconds[1] > 0 ? zoneSeconds[1] : undefined,
+        zone3: zoneSeconds[2] > 0 ? zoneSeconds[2] : undefined,
+        zone4: zoneSeconds[3] > 0 ? zoneSeconds[3] : undefined,
+        zone5: zoneSeconds[4] > 0 ? zoneSeconds[4] : undefined
       };
     })
     .filter(d => d.paceMinPerKm !== null);
@@ -134,11 +134,11 @@ const Insights = () => {
           <YAxis />
           <Tooltip />
           <Legend />
-          <Bar dataKey="zone1" stackId="a" fill="#e0f3f8" name="Zone 1" />
-          <Bar dataKey="zone2" stackId="a" fill="#abd9e9" name="Zone 2" />
-          <Bar dataKey="zone3" stackId="a" fill="#74add1" name="Zone 3" />
-          <Bar dataKey="zone4" stackId="a" fill="#4575b4" name="Zone 4" />
           <Bar dataKey="zone5" stackId="a" fill="#313695" name="Zone 5" />
+          <Bar dataKey="zone4" stackId="a" fill="#4575b4" name="Zone 4" />
+          <Bar dataKey="zone3" stackId="a" fill="#74add1" name="Zone 3" />
+          <Bar dataKey="zone2" stackId="a" fill="#abd9e9" name="Zone 2" />
+          <Bar dataKey="zone1" stackId="a" fill="#e0f3f8" name="Zone 1" />
         </BarChart>
       </ResponsiveContainer>
     </div>
