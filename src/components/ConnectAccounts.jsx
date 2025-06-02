@@ -12,7 +12,8 @@ const ConnectAccounts = () => {
 
   useEffect(() => {
     const token = localStorage.getItem('strava_token');
-    if (token) {
+    const connectedFlag = localStorage.getItem('strava_connected') === 'true';
+    if (token && connectedFlag) {
       setStravaConnected(true);
     }
   }, []);
@@ -23,7 +24,6 @@ const ConnectAccounts = () => {
       ? 'http://localhost:5173/strava-redirect'
       : 'https://easyathlete.vercel.app/strava-redirect';
 
-  // Add userId to state param if present
   const stravaAuthUrl = userId
     ? `https://www.strava.com/oauth/authorize?client_id=${clientId}&response_type=code&redirect_uri=${encodeURIComponent(
         redirectUri
@@ -122,7 +122,9 @@ const ConnectAccounts = () => {
         </button>
 
         <button
-          className={`mt-6 px-6 py-2 rounded text-white ${readyToGenerate ? 'bg-green-600 hover:bg-green-700' : 'bg-gray-400 cursor-not-allowed opacity-50'}`}
+          className={`mt-6 px-6 py-2 rounded text-white ${
+            readyToGenerate ? 'bg-green-600 hover:bg-green-700' : 'bg-gray-400 cursor-not-allowed opacity-50'
+          }`}
           disabled={!readyToGenerate}
           onClick={handleGenerateSchedule}
         >
