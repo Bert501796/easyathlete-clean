@@ -65,7 +65,7 @@ if (window.location.hash && window.location.hash === '#_=_') {
         console.log("📤 Sending code + userId to backend:", { code, userId });
         setStatus('🔄 Exchanging code with backend...');
 
-        const response = await fetch(`${import.meta.env.VITE_API_URL}/strava/exchange`, {
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/exchange`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ code, userId }),
