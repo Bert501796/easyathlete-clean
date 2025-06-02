@@ -204,14 +204,7 @@ const Insights = () => {
         'Estimates workout intensity based on power or heart rate data.'
       )}
 
-      {renderLineChart(
-        'Fitness Trend Over Time',
-        'fitness',
-        '#3366cc',
-        'Tracks overall fitness score to visualize long-term improvement or decline.'
-      )}
-
-      {renderStackedHRZoneChart()}
+            {renderStackedHRZoneChart()}
     </div>
   );
 };
