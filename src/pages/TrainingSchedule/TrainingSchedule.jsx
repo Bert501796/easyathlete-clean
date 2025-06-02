@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import Insights from '../Insights/Insights';
+
 
 const TrainingSchedule = () => {
   const navigate = useNavigate();
@@ -55,30 +57,6 @@ const TrainingSchedule = () => {
     acc[session.week].push(session);
     return acc;
   }, {});
-
-  const HeartZones = () => {
-    const zones = [
-      { name: 'Zone 1 (Recovery)', range: '100–120 bpm' },
-      { name: 'Zone 2 (Endurance)', range: '121–140 bpm' },
-      { name: 'Zone 3 (Tempo)', range: '141–155 bpm' },
-      { name: 'Zone 4 (Threshold)', range: '156–170 bpm' },
-      { name: 'Zone 5 (VO2 Max)', range: '171–185 bpm' }
-    ];
-
-    return (
-      <div className="mt-6">
-        <h3 className="text-xl font-semibold mb-4">🫀 Estimated Heart Rate Zones</h3>
-        <ul className="space-y-2">
-          {zones.map((zone, i) => (
-            <li key={i} className="p-4 border rounded bg-white shadow">
-              <strong>{zone.name}</strong>: {zone.range}
-            </li>
-          ))}
-        </ul>
-        <p className="mt-4 text-sm text-gray-600">VO2 Max estimate will be added soon.</p>
-      </div>
-    );
-  };
 
   const SegmentStep = ({ segment }) => {
     const colorMap = {
@@ -182,7 +160,7 @@ const TrainingSchedule = () => {
         </div>
       ))}
 
-      {!loading && activeTab === 'insights' && <HeartZones />}
+      {!loading && activeTab === 'insights' && <Insights />}
     </div>
   );
 };
