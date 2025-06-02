@@ -18,34 +18,39 @@ export default function OnboardingChatbot({ onComplete }) {
     }
   }, [navigate]);
 
-  const sendMessage = async (text) => {
-    const userId = localStorage.getItem('easyathlete_user_id');
-    const newMessages = [...messages, { role: 'user', content: text }];
-    setMessages(newMessages);
-    setInput('');
-    setLoading(true);
+const sendMessage = async (text) => {
+  const userId = localStorage.getItem('easyathlete_user_id');
+  setInput('');
+  setLoading(true);
 
-    try {
-      const res = await fetch('https://easyathlete-backend-production.up.railway.app/onboarding-bot', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId, conversation: newMessages })
+  setMessages(prevMessages => {
+    const newMessages = [...prevMessages, { role: 'user', content: text }];
+
+    fetch('https://easyathlete-backend-production.up.railway.app/onboarding-bot', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId, conversation: newMessages })
+    })
+      .then(res => res.json())
+      .then(async (data) => {
+        setMessages([...newMessages, { role: 'assistant', content: data.reply }]);
+
+        if (data.finished) {
+          console.log('✅ Onboarding complete:', newMessages);
+          await uploadFinalOnboarding(userId, newMessages);
+          onComplete(newMessages);
+        }
+      })
+      .catch((err) => {
+        console.error('❌ Error sending onboarding message:', err);
+      })
+      .finally(() => {
+        setLoading(false);
       });
 
-      const data = await res.json();
-      setMessages([...newMessages, { role: 'assistant', content: data.reply }]);
-
-      if (data.finished) {
-        console.log('✅ Onboarding complete:', newMessages);
-        await uploadFinalOnboarding(userId, newMessages);
-        onComplete(newMessages);
-      }
-    } catch (err) {
-      console.error('❌ Error sending onboarding message:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
+    return newMessages;
+  });
+};
 
   const uploadFinalOnboarding = async (userId, conversation) => {
     try {
