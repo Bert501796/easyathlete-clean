@@ -1,110 +1,105 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const StravaRedirect = () => {
-  const [status, setStatus] = useState('Connecting to Strava...');
-
-  const urlParams = new URLSearchParams(window.location.search);
-  const code = urlParams.get('code');
-  const state = urlParams.get('state');
-
-  if (!code) {
-    console.warn("⛔ No authorization code in URL. Skipping StravaRedirect.");
-    return (
-      <div className="max-w-xl mx-auto p-6 text-center">
-        <h2 className="text-xl font-bold mb-4">Strava Redirect</h2>
-        <p>⛔ Invalid access. No code received.</p>
-      </div>
-    );
-  }
-
-  console.log("🧭 StravaRedirect mounted");
-  console.log("✅ code from URL:", code);
-  console.log("✅ state from URL:", state);
+  const navigate = useNavigate();
+  const [status, setStatus] = useState('⏳ Connecting to Strava...');
+  const [accessToken, setAccessToken] = useState(null);
+  const [fetching, setFetching] = useState(false);
+  const [activitiesUrl, setActivitiesUrl] = useState(null);
 
   useEffect(() => {
-    console.log('🧭 useEffect triggered in StravaRedirect');
-
-    // 🚫 Clean up unwanted hash from Strava redirect
-if (window.location.hash && window.location.hash === '#_=_') {
-  history.replaceState(null, '', window.location.pathname + window.location.search);
-}
-
     const urlParams = new URLSearchParams(window.location.search);
     const code = urlParams.get('code');
-    const state = urlParams.get('state');
-
-    console.log("🔁 Re-check URL params inside useEffect:");
-    console.log("✅ code:", code);
-    console.log("✅ state:", state);
-
+    const state = urlParams.get('state'); // userId
     const userId = localStorage.getItem('easyathlete_user_id');
-    console.log("👤 userId from localStorage:", userId);
 
-    if (!code) {
-      console.warn("❌ No code in URL — exiting flow.");
-      setStatus('❌ Authorization code not found in URL.');
-      return;
-    }
-
-    if (!userId) {
-      console.warn('❌ No user ID found. Redirecting to homepage.');
-      setStatus('❌ No onboarding data found. Returning to start...');
-      setTimeout(() => window.location.replace('/'), 2000);
-      return;
-    }
-
-    if (state && state !== userId) {
-      console.warn('⚠️ State mismatch. Redirecting to homepage.');
-      setStatus('⚠️ Authorization mismatch. Returning to start...');
-      setTimeout(() => window.location.replace('/'), 2000);
+    if (!code || !userId || state !== userId) {
+      setStatus('❌ Invalid state or code. Redirecting...');
+      setTimeout(() => navigate('/'), 3000);
       return;
     }
 
     const exchangeToken = async () => {
       try {
-        console.log("📤 Sending code + userId to backend:", { code, userId });
-        setStatus('🔄 Exchanging code with backend...');
-
-        const response = await fetch(`${import.meta.env.VITE_API_URL}/exchange`, {
+        const response = await fetch('https://easyathlete-backend-production.up.railway.app/strava/exchange', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+          },
           body: JSON.stringify({ code, userId }),
         });
 
+        if (!response.ok) throw new Error('Token exchange failed');
+
         const data = await response.json();
-        console.log("📨 Response from backend:", data);
-
-        if (!response.ok || !data.access_token) {
-          throw new Error(data.error || 'Failed to retrieve token');
-        }
-
-        const accessToken = data.access_token;
-        console.log("📥 Received access token:", accessToken);
-        localStorage.setItem('strava_token', accessToken);
-
-        const activitiesRes = await fetch('https://www.strava.com/api/v3/athlete/activities?per_page=100', {
-          headers: { Authorization: `Bearer ${accessToken}` },
-        });
-
-        const activities = await activitiesRes.json();
-        console.log("✅ Activities fetched:", activities);
-
-        localStorage.setItem('strava_activities', JSON.stringify(activities));
-        localStorage.setItem('strava_connected', 'true'); // ✅ Set success flag
-        window.location.href = '/connect'; // ✅ Redirect to ConnectAccounts
-      } catch (error) {
-        console.error("❌ Error during Strava redirect flow:", error);
-        setStatus(`❌ ${error.message}`);
+        setAccessToken(data.access_token);
+        localStorage.setItem('strava_access_token', data.access_token);
+        setStatus('✅ Strava connected successfully!');
+      } catch (err) {
+        console.error(err);
+        setStatus('❌ Failed to connect to Strava.');
       }
     };
 
     exchangeToken();
-  }, []);
+  }, [navigate]);
+
+  const handleFetchActivities = async () => {
+    const userId = localStorage.getItem('easyathlete_user_id');
+    const token = accessToken || localStorage.getItem('strava_access_token');
+
+    if (!token || !userId) {
+      setStatus('❌ Missing userId or token');
+      return;
+    }
+
+    setFetching(true);
+    setStatus('📡 Fetching activities...');
+
+    try {
+      const res = await fetch('https://easyathlete-backend-production.up.railway.app/strava/fetch-activities', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ accessToken: token, userId }),
+      });
+
+      if (!res.ok) throw new Error('Failed to fetch activities');
+      const data = await res.json();
+
+      setStatus('✅ Activities stored in Cloudinary!');
+      setActivitiesUrl(data.cloudinaryUrl);
+    } catch (err) {
+      console.error(err);
+      setStatus('❌ Error fetching activities');
+    } finally {
+      setFetching(false);
+    }
+  };
 
   return (
     <div className="max-w-xl mx-auto p-6 text-center">
       <h2 className="text-xl font-bold mb-4">Strava Redirect</h2>
-      <p>{status}</p>
+      <p className="mb-4">{status}</p>
+
+      {accessToken && !fetching && (
+        <button
+          onClick={handleFetchActivities}
+          className="bg-orange-600 text-white px-4 py-2 rounded"
+        >
+          Fetch My Strava Activities →
+        </button>
+      )}
+
+      {activitiesUrl && (
+        <div className="mt-4 text-sm text-gray-600">
+          <a href={activitiesUrl} target="_blank" rel="noopener noreferrer" className="underline">
+            View stored JSON
+          </a>
+        </div>
+      )}
     </div>
   );
 };
