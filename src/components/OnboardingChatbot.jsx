@@ -1,5 +1,5 @@
 // src/components/OnboardingChatbot.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 export default function OnboardingChatbot({ onComplete }) {
@@ -7,13 +7,20 @@ export default function OnboardingChatbot({ onComplete }) {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const chatEndRef = useRef(null);
 
   useEffect(() => {
     setMessages([{ role: 'assistant', content: 'Hi! What’s your main goal for training right now?' }]);
   }, []);
 
+  useEffect(() => {
+    if (chatEndRef.current) {
+      chatEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [messages]);
+
   const sendMessage = async (text) => {
-    const userId = localStorage.getItem('easyathlete_user_id'); // may be null initially
+    const userId = localStorage.getItem('easyathlete_user_id');
     const updatedMessages = [...messages, { role: 'user', content: text }];
     setMessages(updatedMessages);
     setInput('');
@@ -24,7 +31,7 @@ export default function OnboardingChatbot({ onComplete }) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          userId: userId || null, // send null if not present
+          userId: userId || null,
           conversation: updatedMessages
         })
       });
@@ -64,25 +71,32 @@ export default function OnboardingChatbot({ onComplete }) {
   };
 
   return (
-    <div className="max-w-xl mx-auto p-6 space-y-4">
-      <div className="space-y-3">
+    <div className="flex flex-col h-screen">
+      <div className="flex-1 overflow-y-auto p-6 space-y-3 bg-gray-50">
         {messages.map((msg, idx) => (
-          <div key={idx} className={`p-2 rounded ${msg.role === 'user' ? 'bg-blue-100 text-right' : 'bg-gray-100 text-left'}`}>
+          <div
+            key={idx}
+            className={`max-w-xs p-3 rounded shadow ${
+              msg.role === 'user' ? 'bg-blue-100 self-end text-right' : 'bg-white self-start text-left'
+            }`}
+          >
             {msg.content}
           </div>
         ))}
+        <div ref={chatEndRef} />
       </div>
 
-      <input
-        className="border p-2 w-full rounded mt-4"
-        value={input}
-        onChange={(e) => setInput(e.target.value)}
-        onKeyDown={(e) => e.key === 'Enter' && input && !loading && sendMessage(input)}
-        placeholder="Type your answer and press Enter"
-        disabled={loading}
-      />
-
-      {loading && <div className="text-sm text-gray-500">Thinking...</div>}
+      <div className="border-t p-4 bg-white sticky bottom-0">
+        <input
+          className="border p-2 w-full rounded"
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          onKeyDown={(e) => e.key === 'Enter' && input && !loading && sendMessage(input)}
+          placeholder="Type your answer and press Enter"
+          disabled={loading}
+        />
+        {loading && <div className="text-sm text-gray-500 mt-2">Thinking...</div>}
+      </div>
     </div>
   );
 }
