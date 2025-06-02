@@ -10,8 +10,9 @@ import {
 import OnboardingChatbot from './components/OnboardingChatbot';
 import ConnectAccounts from './components/ConnectAccounts';
 import StravaRedirect from './components/StravaRedirect';
-import TrainingSchedule from './components/TrainingSchedule';
-import GenerateSchedule from './components/GenerateSchedule'; // ✅ New import
+import GenerateSchedule from './components/GenerateSchedule';
+import Insights from './pages/Insights/Insights';
+import TrainingSchedule from './pages/TrainingSchedule/TrainingSchedule';
 
 const Home = ({ answers, onComplete }) => {
   const navigate = useNavigate();
@@ -97,7 +98,8 @@ export default function App() {
         <Route path="/connect" element={<ConnectAccounts />} />
         <Route path="/strava-redirect" element={<StravaRedirect />} />
         <Route path="/schedule" element={<TrainingSchedule />} />
-        <Route path="/generate" element={<GenerateSchedule />} /> {/* ✅ New route */}
+        <Route path="/generate" element={<GenerateSchedule />} />
+        <Route path="/insights" element={<Insights />} /> {/* ✅ New route for Insights */}
       </Routes>
     </Router>
   );
