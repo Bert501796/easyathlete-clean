@@ -3,39 +3,12 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 const questions = [
-  {
-    key: 'goal',
-    text: 'What is your main fitness goal?',
-    type: 'text'
-  },
-  {
-    key: 'deadline',
-    text: 'By when do you want to achieve this goal?',
-    type: 'text'
-  },
-  {
-    key: 'level',
-    text: 'How would you describe your current fitness level?',
-    type: 'options',
-    options: ['Beginner', 'Intermediate', 'Advanced']
-  },
-  {
-    key: 'daysPerWeek',
-    text: 'How many days a week do you want to train?',
-    type: 'options',
-    options: ['1-2', '3-4', '5-6', 'Every day']
-  },
-  {
-    key: 'sports',
-    text: 'Which sports do you want to include in your training plan?',
-    type: 'multi-select',
-    options: ['Running', 'Cycling', 'Swimming', 'Strength', 'Walking']
-  },
-  {
-    key: 'restrictions',
-    text: 'Do you have any injuries or restrictions we should know about?',
-    type: 'text'
-  }
+  { key: 'goal', text: 'What is your main fitness goal?', type: 'text' },
+  { key: 'deadline', text: 'By when do you want to achieve this goal?', type: 'text' },
+  { key: 'level', text: 'How would you describe your current fitness level?', type: 'options', options: ['Beginner', 'Intermediate', 'Advanced'] },
+  { key: 'daysPerWeek', text: 'How many days a week do you want to train?', type: 'options', options: ['1-2', '3-4', '5-6', 'Every day'] },
+  { key: 'sports', text: 'Which sports do you want to include in your training plan?', type: 'multi-select', options: ['Running', 'Cycling', 'Swimming', 'Strength', 'Walking'] },
+  { key: 'restrictions', text: 'Do you have any injuries or restrictions we should know about?', type: 'text' }
 ];
 
 export default function OnboardingChatbot({ onComplete }) {
@@ -64,7 +37,6 @@ export default function OnboardingChatbot({ onComplete }) {
     if (step + 1 < questions.length) {
       setStep(step + 1);
     } else {
-      // Generate userId if missing before submitting
       let userId = localStorage.getItem('easyathlete_user_id');
       if (!userId) {
         userId = `user_${crypto.randomUUID()}`;
@@ -72,8 +44,29 @@ export default function OnboardingChatbot({ onComplete }) {
         console.log('🆕 (Chatbot) Generated userId:', userId);
       }
 
-      submitOnboardingToBackend(userId, updated);
-      onComplete(updated);
+      submitAndComplete(userId, updated);
+    }
+  };
+
+  const submitAndComplete = async (userId, data) => {
+    console.log('📤 Submitting onboarding with:', { userId, onboardingData: data });
+
+    try {
+      const response = await fetch('https://easyathlete-backend-production.up.railway.app/upload-onboarding', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, onboardingData: data })
+      });
+
+      if (!response.ok) {
+        console.error('❌ Failed to upload onboarding data');
+        return;
+      }
+
+      console.log('✅ Onboarding data uploaded');
+      onComplete(data);
+    } catch (error) {
+      console.error('❌ Error uploading onboarding data:', error);
     }
   };
 
@@ -83,45 +76,18 @@ export default function OnboardingChatbot({ onComplete }) {
     );
   };
 
-  const submitOnboardingToBackend = async (userId, data) => {
-    console.log('📤 Submitting onboarding with:', { userId, onboardingData: data });
-
-    try {
-      const response = await fetch('https://easyathlete-backend-production.up.railway.app/upload-onboarding', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          userId,
-          onboardingData: data
-        })
-      });
-
-      if (!response.ok) {
-        console.error('❌ Failed to upload onboarding data');
-      } else {
-        console.log('✅ Onboarding data uploaded');
-      }
-    } catch (error) {
-      console.error('❌ Error uploading onboarding data:', error);
-    }
-  };
-
   return (
     <div className="max-w-xl mx-auto p-6 space-y-4">
       <div className="text-lg font-medium">{current.text}</div>
 
       {current.type === 'text' && (
-        <div>
-          <input
-            className="border p-2 w-full rounded"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && input && handleNext(input)}
-            placeholder="Type your answer and press Enter"
-          />
-        </div>
+        <input
+          className="border p-2 w-full rounded"
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          onKeyDown={(e) => e.key === 'Enter' && input && handleNext(input)}
+          placeholder="Type your answer and press Enter"
+        />
       )}
 
       {current.type === 'options' && (
