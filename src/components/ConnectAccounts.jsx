@@ -22,7 +22,7 @@ const ConnectAccounts = () => {
   const redirectUri =
     window.location.hostname === 'localhost'
       ? 'http://localhost:5173/strava-redirect'
-      : 'https://easyathlete.vercel.app/strava-redirect';
+      : 'https://easyathlete-clean.vercel.app/strava-redirect';
 
   const stravaAuthUrl = userId
     ? `https://www.strava.com/oauth/authorize?client_id=${clientId}&response_type=code&redirect_uri=${encodeURIComponent(
