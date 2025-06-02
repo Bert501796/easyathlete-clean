@@ -13,6 +13,7 @@ export default function OnboardingChatbot({ onComplete }) {
   }, []);
 
   const sendMessage = async (text) => {
+    const userId = localStorage.getItem('easyathlete_user_id'); // may be null initially
     const updatedMessages = [...messages, { role: 'user', content: text }];
     setMessages(updatedMessages);
     setInput('');
@@ -22,7 +23,10 @@ export default function OnboardingChatbot({ onComplete }) {
       const res = await fetch('https://easyathlete-backend-production.up.railway.app/onboarding-bot', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ conversation: updatedMessages })
+        body: JSON.stringify({
+          userId: userId || null, // send null if not present
+          conversation: updatedMessages
+        })
       });
 
       const data = await res.json();
@@ -30,11 +34,14 @@ export default function OnboardingChatbot({ onComplete }) {
       setMessages(newMessages);
 
       if (data.finished) {
-        const userId = `user_${crypto.randomUUID()}`;
-        localStorage.setItem('easyathlete_user_id', userId);
-        console.log('🆕 Generated userId:', userId);
+        let finalUserId = userId;
+        if (!finalUserId) {
+          finalUserId = `user_${crypto.randomUUID()}`;
+          localStorage.setItem('easyathlete_user_id', finalUserId);
+          console.log('🆕 Generated userId:', finalUserId);
+        }
 
-        await uploadFinalOnboarding(userId, newMessages);
+        await uploadFinalOnboarding(finalUserId, newMessages);
         onComplete(newMessages);
       }
     } catch (err) {
