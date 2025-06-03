@@ -1,3 +1,4 @@
+// src/pages/GenerateSchedule.jsx
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -13,17 +14,23 @@ const GenerateSchedule = () => {
       }
 
       try {
-        const res = await fetch(`https://easyathlete-backend-production.up.railway.app/ai-prompt/${userId}`);
+        const athleteData = { level: 'intermediate' }; // TODO: replace with actual onboarding data if available
+
+        const res = await fetch('https://easyathlete-backend-production.up.railway.app/generate-training-schedule', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userId, athleteData })
+        });
+
         if (!res.ok) throw new Error('Failed to generate schedule');
 
         const data = await res.json();
         console.log('✅ Schedule generated and saved:', data);
 
-        // Navigate to the schedule page to view it
+        localStorage.setItem('training_schedule', JSON.stringify(data.schedule)); // Store schedule locally for now
         navigate('/schedule');
       } catch (err) {
         console.error('❌ Schedule generation failed:', err);
-        // You could show an error screen or fallback here if needed
       }
     };
 
