@@ -20,43 +20,45 @@ export default function OnboardingChatbot({ onComplete }) {
   }, [messages]);
 
   const sendMessage = async (text) => {
-    const userId = localStorage.getItem('easyathlete_user_id');
-    const updatedMessages = [...messages, { role: 'user', content: text }];
-    setMessages(updatedMessages);
-    setInput('');
-    setLoading(true);
+  let userId = localStorage.getItem('easyathlete_user_id');
 
-    try {
-      const res = await fetch('https://easyathlete-backend-production.up.railway.app/onboarding-bot', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          userId: userId || null,
-          conversation: updatedMessages
-        })
-      });
+  // ✅ Create userId early if it doesn't exist
+  if (!userId) {
+    userId = `user_${crypto.randomUUID()}`;
+    localStorage.setItem('easyathlete_user_id', userId);
+    console.log('🆕 Generated userId early:', userId);
+  }
 
-      const data = await res.json();
-      const newMessages = [...updatedMessages, { role: 'assistant', content: data.reply }];
-      setMessages(newMessages);
+  const updatedMessages = [...messages, { role: 'user', content: text }];
+  setMessages(updatedMessages);
+  setInput('');
+  setLoading(true);
 
-      if (data.finished) {
-        let finalUserId = userId;
-        if (!finalUserId) {
-          finalUserId = `user_${crypto.randomUUID()}`;
-          localStorage.setItem('easyathlete_user_id', finalUserId);
-          console.log('🆕 Generated userId:', finalUserId);
-        }
+  try {
+    const res = await fetch('https://easyathlete-backend-production.up.railway.app/onboarding-bot', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        userId,
+        conversation: updatedMessages
+      })
+    });
 
-        await uploadFinalOnboarding(finalUserId, newMessages);
-        onComplete(newMessages);
-      }
-    } catch (err) {
-      console.error('❌ Error sending onboarding message:', err);
-    } finally {
-      setLoading(false);
+    const data = await res.json();
+    const newMessages = [...updatedMessages, { role: 'assistant', content: data.reply }];
+    setMessages(newMessages);
+
+    if (data.finished) {
+      await uploadFinalOnboarding(userId, newMessages);
+      onComplete(newMessages);
     }
-  };
+  } catch (err) {
+    console.error('❌ Error sending onboarding message:', err);
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   const uploadFinalOnboarding = async (userId, conversation) => {
     try {
