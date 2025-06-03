@@ -80,6 +80,8 @@ const handleGenerateSchedule = async () => {
     return;
   }
 
+  console.log("📤 Submitting userId for schedule generation:", userId);
+
   try {
     const res = await fetch('https://easyathlete-backend-production.up.railway.app/generate-training-schedule', {
       method: 'POST',
