@@ -1,66 +1,40 @@
-// src/pages/TrainingSchedule.jsx
 import React, { useEffect, useState } from 'react';
 
 const TrainingSchedule = () => {
   const [schedule, setSchedule] = useState([]);
-  const userId = localStorage.getItem('easyathlete_user_id'); // get the user ID
+  const [loading, setLoading] = useState(true);
+  const userId = localStorage.getItem('easyathlete_user_id');
 
- useEffect(() => {
-    const loadSchedule = async () => {
-      // Step 1: Try localStorage
-      const stored = localStorage.getItem('training_schedule');
-      if (stored) {
-        try {
-          setSchedule(JSON.parse(stored));
-          return;
-        } catch (e) {
-          console.error('❌ Failed to parse training schedule:', e);
-        }
+  useEffect(() => {
+    const fetchSchedule = async () => {
+      if (!userId) {
+        console.warn('⚠️ No userId in localStorage');
+        setLoading(false);
+        return;
       }
 
-      // Step 2: Fetch latest file from Cloudinary
-      if (userId) {
-        try {
-          const expression = `folder="easyathlete/${userId}/schedule" AND resource_type="raw"`;
-          const cloudinarySearchUrl = `https://res.cloudinary.com/dcptv15au/raw/upload`;
-          const apiUrl = `https://api.cloudinary.com/v1_1/dcptv15au/resources/search`;
+      try {
+        const res = await fetch(`https://easyathlete-backend-production.up.railway.app/schedule/latest/${userId}`);
+        if (!res.ok) throw new Error('Schedule not found or server error');
 
-          const res = await fetch(apiUrl, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Basic ${btoa(
-                `${import.meta.env.VITE_CLOUDINARY_API_KEY}:${import.meta.env.VITE_CLOUDINARY_API_SECRET}`
-              )}`
-            },
-            body: JSON.stringify({
-              expression,
-              sort_by: [{ public_id: 'desc' }],
-              max_results: 1
-            })
-          });
-
-          const data = await res.json();
-          const latest = data.resources?.[0];
-
-          if (latest?.secure_url) {
-            const fileRes = await fetch(latest.secure_url);
-            if (!fileRes.ok) throw new Error(`Failed to fetch latest training schedule file`);
-
-            const json = await fileRes.json();
-            setSchedule(json);
-            localStorage.setItem('training_schedule', JSON.stringify(json));
-          } else {
-            console.warn('⚠️ No training schedule file found in Cloudinary.');
-          }
-        } catch (err) {
-          console.error('❌ Failed to fetch training schedule from Cloudinary:', err);
-        }
+        const data = await res.json();
+        setSchedule(data.schedule);
+        localStorage.setItem('training_schedule', JSON.stringify(data.schedule));
+      } catch (err) {
+        console.error('❌ Failed to load schedule:', err);
+      } finally {
+        setLoading(false);
       }
     };
 
-    loadSchedule();
+    fetchSchedule();
   }, [userId]);
+
+  if (loading) {
+    return (
+      <div className="p-8 text-center text-gray-500">Loading training schedule...</div>
+    );
+  }
 
   if (!schedule || schedule.length === 0) {
     return (
@@ -74,7 +48,6 @@ const TrainingSchedule = () => {
   return (
     <div className="max-w-3xl mx-auto p-6 space-y-6">
       <h1 className="text-3xl font-bold text-center mb-4">🏋️ Your Training Schedule</h1>
-
       {schedule.map((workout, idx) => (
         <div key={idx} className="bg-white p-4 rounded shadow">
           <h2 className="text-xl font-semibold">{workout.day}</h2>
