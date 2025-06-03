@@ -84,14 +84,7 @@ const handleGenerateSchedule = async () => {
     const res = await fetch('https://easyathlete-backend-production.up.railway.app/generate-training-schedule', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        userId,
-        athleteData: {
-          goal: 'Improve endurance',
-          experience: 'intermediate',
-          availableDays: ['Monday', 'Wednesday', 'Friday', 'Sunday']
-        }
-      })
+      body: JSON.stringify({ userId })  // ✅ Remove athleteData here
     });
 
     const data = await res.json();
@@ -106,7 +99,6 @@ const handleGenerateSchedule = async () => {
     console.error('❌ Schedule generation failed:', err);
   }
 };
-
 
   return (
     <div className="max-w-xl mx-auto p-6 text-center">
