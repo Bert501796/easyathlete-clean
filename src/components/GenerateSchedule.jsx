@@ -5,17 +5,16 @@ import { useNavigate } from 'react-router-dom';
 const GenerateSchedule = () => {
   const navigate = useNavigate();
   const userId = localStorage.getItem('easyathlete_user_id');
+  const athleteData = JSON.parse(localStorage.getItem('onboarding_answers')); // Or wherever it's stored
 
   useEffect(() => {
     const fetchSchedule = async () => {
-      if (!userId) {
-        console.error('❌ No user ID found.');
+      if (!userId || !athleteData) {
+        console.error('❌ Missing userId or athleteData');
         return;
       }
 
       try {
-        const athleteData = { level: 'intermediate' }; // TODO: replace with actual onboarding data if available
-
         const res = await fetch('https://easyathlete-backend-production.up.railway.app/generate-training-schedule', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -25,9 +24,12 @@ const GenerateSchedule = () => {
         if (!res.ok) throw new Error('Failed to generate schedule');
 
         const data = await res.json();
-        console.log('✅ Schedule generated and saved:', data);
+        console.log('✅ Schedule generated:', data.schedule);
 
-        localStorage.setItem('training_schedule', JSON.stringify(data.schedule)); // Store schedule locally for now
+        // 🧠 Store it for /schedule page
+        localStorage.setItem('training_schedule', JSON.stringify(data.schedule));
+
+        // 👣 Navigate to show the schedule
         navigate('/schedule');
       } catch (err) {
         console.error('❌ Schedule generation failed:', err);
@@ -35,13 +37,13 @@ const GenerateSchedule = () => {
     };
 
     fetchSchedule();
-  }, [navigate, userId]);
+  }, [navigate, userId, athleteData]);
 
   return (
     <div className="p-8 text-center">
       <h2 className="text-2xl font-bold mb-4">⏳ Creating your training schedule...</h2>
       <img
-        src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNGN0a2R2ZXg1OWM4YTh5MzBmcnBneDBpcnpoNGFwMnRzeHR4bzF4ZCZlcD12MV9naWZzX3NlYXJjaCZjdD1n/f3iwJFOVOwuy7K6FFw/giphy.gif"
+        src="https://media.giphy.com/media/f3iwJFOVOwuy7K6FFw/giphy.gif"
         alt="Loading..."
         className="mx-auto w-40"
       />
