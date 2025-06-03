@@ -73,9 +73,40 @@ const ConnectAccounts = () => {
     }
   };
 
-  const handleGenerateSchedule = () => {
+const handleGenerateSchedule = async () => {
+  const userId = localStorage.getItem('easyathlete_user_id');
+  if (!userId) {
+    console.error('❌ No user ID found.');
+    return;
+  }
+
+  try {
+    const res = await fetch('https://easyathlete-backend-production.up.railway.app/generate-training-schedule', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        userId,
+        athleteData: {
+          goal: 'Improve endurance',
+          experience: 'intermediate',
+          availableDays: ['Monday', 'Wednesday', 'Friday', 'Sunday']
+        }
+      })
+    });
+
+    const data = await res.json();
+    console.log('✅ Schedule generated:', data);
+
+    // Save to localStorage
+    localStorage.setItem('training_schedule', JSON.stringify(data.schedule));
+
+    // Navigate to view
     navigate('/schedule');
-  };
+  } catch (err) {
+    console.error('❌ Schedule generation failed:', err);
+  }
+};
+
 
   return (
     <div className="max-w-xl mx-auto p-6 text-center">
