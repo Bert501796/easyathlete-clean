@@ -16,6 +16,8 @@ import Insights from './pages/Insights/Insights';
 import TrainingSchedule from './pages/TrainingSchedule/TrainingSchedule';
 import Signup from './components/auth/Signup'; // ✅ updated path
 import Login from './components/auth/Login';   // ✅ updated path
+import Paywall from './components/payment/Paywall';
+
 
 const Home = ({ answers, onComplete }) => {
   const navigate = useNavigate();
@@ -105,6 +107,8 @@ export default function App() {
         <Route path="/insights" element={<Insights />} />
         <Route path="/signup" element={<Signup />} />   {/* ✅ New route */}
         <Route path="/login" element={<Login />} />     {/* ✅ New route */}
+        <Route path="/pay" element={<Paywall />} />
+
       </Routes>
     </Router>
   );
