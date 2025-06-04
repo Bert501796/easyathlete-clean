@@ -27,14 +27,17 @@ const Home = ({ answers, onComplete }) => {
   const location = useLocation();
   const userId = localStorage.getItem('easyathlete_user_id');
 
-  useEffect(() => {
-    console.log('🧭 Router loaded at:', location.pathname);
-    console.log('👤 LocalStorage userId:', userId);
+useEffect(() => {
+  const userId = localStorage.getItem('easyathlete_user_id');
+  const onboardingStarted = localStorage.getItem('easyathlete_onboarding_messages');
 
-    if (!userId && !location.pathname.startsWith('/strava-redirect')) {
-      console.warn('⛔ No userId, redirecting to onboarding');
-      navigate('/');
-    }
+  console.log('🧭 Router loaded at:', location.pathname);
+  console.log('👤 LocalStorage userId:', userId);
+
+  if (!userId && !onboardingStarted && !location.pathname.startsWith('/strava-redirect')) {
+    console.warn('⛔ No onboarding started, redirecting to /');
+    navigate('/');
+  }
 
     if (location.pathname === '/' && userId && !answers) {
       console.warn('⚠️ Unexpected redirect to onboarding, but userId exists. Check onboarding_answers in localStorage.');
