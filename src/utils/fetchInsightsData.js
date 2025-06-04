@@ -8,7 +8,7 @@ export const fetchLatestInsightsJson = async (userId) => {
 
   // Use cached version if less than 30 minutes old
   if (cached && lastFetched && now - parseInt(lastFetched, 10) < 30 * 60 * 1000) {
-    return JSON.parse(cached);
+   // return JSON.parse(cached);
   }
 
   try {
