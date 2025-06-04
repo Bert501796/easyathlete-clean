@@ -48,7 +48,7 @@ const StravaRedirect = () => {
         if (!res.ok) throw new Error('Failed to fetch activities');
 
         setStatus('✅ Activities fetched! Redirecting to onboarding...');
-        setTimeout(() => navigate('/onboarding'), 2000);
+        setTimeout(() => navigate('/'), 2000);
       } catch (err) {
         console.error(err);
         setStatus('❌ Strava connection or fetch failed. Redirecting...');
