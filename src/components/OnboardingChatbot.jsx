@@ -104,17 +104,23 @@ export default function OnboardingChatbot({ onComplete }) {
   };
 
   const uploadFinalOnboarding = async (userId, conversation) => {
-    try {
-      await fetch('https://easyathlete-backend-production.up.railway.app/upload-onboarding', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId, onboardingData: conversation })
-      });
-      localStorage.removeItem('easyathlete_onboarding_messages');
-    } catch (err) {
-      console.error('❌ Failed to upload final onboarding conversation:', err);
-    }
-  };
+  try {
+    await fetch('https://easyathlete-backend-production.up.railway.app/upload-onboarding', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId, onboardingData: conversation })
+    });
+
+    // ✅ Store for schedule generation
+    localStorage.setItem('onboarding_answers', JSON.stringify(conversation));
+
+    // ✅ Clear temporary messages
+    localStorage.removeItem('easyathlete_onboarding_messages');
+  } catch (err) {
+    console.error('❌ Failed to upload final onboarding conversation:', err);
+  }
+};
+
 
   return (
     <div className="flex flex-col h-screen">
