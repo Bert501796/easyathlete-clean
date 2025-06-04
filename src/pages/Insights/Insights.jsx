@@ -33,6 +33,7 @@ const Insights = () => {
   const userId = localStorage.getItem('easyathlete_user_id');
 
   useEffect(() => {
+    console.log("🔍 Insights component mounted")
     const fetchActivities = async () => {
       if (!userId) return;
 
