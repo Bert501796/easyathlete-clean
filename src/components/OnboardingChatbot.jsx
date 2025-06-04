@@ -13,6 +13,7 @@ export default function OnboardingChatbot({ onComplete }) {
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
   const [signupMessage, setSignupMessage] = useState('');
+  const inputRef = useRef(null);
 
 
   useEffect(() => {
@@ -23,6 +24,9 @@ export default function OnboardingChatbot({ onComplete }) {
     if (chatEndRef.current) {
       chatEndRef.current.scrollIntoView({ behavior: 'smooth' });
     }
+    if (inputRef.current) {
+    inputRef.current.focus();
+  }
   }, [messages]);
 
   const sendMessage = async (text) => {
@@ -178,6 +182,7 @@ return (
         {/* Input */}
         <div className="border-t p-4 bg-white sticky bottom-0">
           <input
+            ref={inputRef}
             className="border p-2 w-full rounded"
             value={input}
             onChange={(e) => setInput(e.target.value)}
@@ -187,7 +192,7 @@ return (
             placeholder="Type your answer and press Enter"
             disabled={loading}
           />
-          {loading && <div className="text-sm text-gray-500 mt-2">Thinking...</div>}
+          {loading && <div className="text-sm text-gray-500 mt-2">Writing...</div>}
         </div>
       </>
     )}
