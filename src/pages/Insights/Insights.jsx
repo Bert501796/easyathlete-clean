@@ -60,7 +60,7 @@ const Insights = () => {
 
   const filtered = activities.filter((a) => {
     const matchType = selectedType === 'All' || a.type === selectedType;
-    const matchTime = !timeframeDays || (new Date(a.start_date) >= new Date(now - timeframeDays * 86400000));
+    const matchTime = !timeframeDays || (new Date(a.startDate) >= new Date(now - timeframeDays * 86400000));
     return matchType && matchTime;
   });
 
