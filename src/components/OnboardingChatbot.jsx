@@ -73,32 +73,49 @@ export default function OnboardingChatbot({ onComplete }) {
   };
 
   return (
-    <div className="flex flex-col h-screen">
-      <div className="flex-1 overflow-y-auto p-6 space-y-3 bg-gray-50">
-        {messages.map((msg, idx) => (
-          <div
-            key={idx}
-            className={`max-w-xs p-3 rounded shadow ${
-              msg.role === 'user' ? 'bg-blue-100 self-end text-right' : 'bg-white self-start text-left'
-            }`}
-          >
-            {msg.content}
-          </div>
-        ))}
-        <div ref={chatEndRef} />
-      </div>
-
-      <div className="border-t p-4 bg-white sticky bottom-0">
-        <input
-          className="border p-2 w-full rounded"
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && input && !loading && sendMessage(input)}
-          placeholder="Type your answer and press Enter"
-          disabled={loading}
-        />
-        {loading && <div className="text-sm text-gray-500 mt-2">Thinking...</div>}
-      </div>
+  <div className="flex flex-col h-screen">
+    {/* Login button */}
+    <div className="bg-white p-4 border-b flex justify-end">
+      <button
+        onClick={() => navigate('/login')}
+        className="text-blue-600 underline text-sm hover:text-blue-800"
+      >
+        Already have an account? Log in
+      </button>
     </div>
-  );
+
+    {/* Chat messages */}
+    <div className="flex-1 overflow-y-auto p-6 space-y-3 bg-gray-50">
+      {messages.map((msg, idx) => (
+        <div
+          key={idx}
+          className={`max-w-xs p-3 rounded shadow ${
+            msg.role === 'user'
+              ? 'bg-blue-100 self-end text-right'
+              : 'bg-white self-start text-left'
+          }`}
+        >
+          {msg.content}
+        </div>
+      ))}
+      <div ref={chatEndRef} />
+    </div>
+
+    {/* Input */}
+    <div className="border-t p-4 bg-white sticky bottom-0">
+      <input
+        className="border p-2 w-full rounded"
+        value={input}
+        onChange={(e) => setInput(e.target.value)}
+        onKeyDown={(e) =>
+          e.key === 'Enter' && input && !loading && sendMessage(input)
+        }
+        placeholder="Type your answer and press Enter"
+        disabled={loading}
+      />
+      {loading && <div className="text-sm text-gray-500 mt-2">Thinking...</div>}
+    </div>
+  </div>
+);
+
 }
