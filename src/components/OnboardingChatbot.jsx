@@ -16,9 +16,14 @@ export default function OnboardingChatbot({ onComplete }) {
   const inputRef = useRef(null);
 
 
-  useEffect(() => {
+useEffect(() => {
+  const storedMessages = localStorage.getItem('easyathlete_onboarding_messages');
+  if (storedMessages) {
+    setMessages(JSON.parse(storedMessages));
+  } else {
     setMessages([{ role: 'assistant', content: 'Hi! What’s your main goal for training right now?' }]);
-  }, []);
+  }
+}, []);
 
   useEffect(() => {
     if (chatEndRef.current) {
@@ -26,6 +31,9 @@ export default function OnboardingChatbot({ onComplete }) {
     }
     if (inputRef.current) {
     inputRef.current.focus();
+  }
+    if (messages.length > 0) {
+    localStorage.setItem('easyathlete_onboarding_messages', JSON.stringify(messages));
   }
   }, [messages]);
 
@@ -98,17 +106,21 @@ const handleSignup = async () => {
   }
 };
 
-  const uploadFinalOnboarding = async (userId, conversation) => {
-    try {
-      await fetch('https://easyathlete-backend-production.up.railway.app/upload-onboarding', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId, onboardingData: conversation })
-      });
-    } catch (err) {
-      console.error('❌ Failed to upload final onboarding conversation:', err);
-    }
-  };
+const uploadFinalOnboarding = async (userId, conversation) => {
+  try {
+    await fetch('https://easyathlete-backend-production.up.railway.app/upload-onboarding', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId, onboardingData: conversation })
+    });
+
+    // ✅ Clear stored messages only after successful upload
+    localStorage.removeItem('easyathlete_onboarding_messages');
+  } catch (err) {
+    console.error('❌ Failed to upload final onboarding conversation:', err);
+  }
+};
+
 
 return (
   <div className="flex flex-col h-screen">

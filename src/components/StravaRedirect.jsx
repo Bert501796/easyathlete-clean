@@ -52,7 +52,7 @@ const StravaRedirect = () => {
       } catch (err) {
         console.error(err);
         setStatus('❌ Strava connection or fetch failed. Redirecting...');
-        setTimeout(() => navigate('/onboarding'), 3000);
+        setTimeout(() => navigate('/'), 3000);
       }
     };
 
