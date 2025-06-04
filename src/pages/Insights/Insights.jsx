@@ -64,31 +64,14 @@ const Insights = () => {
     return matchType && matchTime;
   });
 
-  const chartData = [...filtered]
-    .sort((a, b) => new Date(a.start_date) - new Date(b.start_date))
-    .map((a) => {
-      const zoneSeconds = a.hrZoneBuckets || [];
-      const totalZoneTime = zoneSeconds.reduce((sum, val) => sum + val, 0) || 1;
-      return {
-        name: a.start_date?.slice(0, 10),
-        paceMinPerKm: a.average_speed ? +(1000 / (a.average_speed * 60)).toFixed(2) : null,
-        hrEfficiency: a.average_heartrate && a.average_speed
-          ? +(a.average_speed / a.average_heartrate).toFixed(3)
-          : null,
-        elevationPerKm: a.total_elevation_gain && a.distance
-          ? +(a.total_elevation_gain / (a.distance / 1000)).toFixed(1)
-          : null,
-        estimatedLoad: a.kilojoules || a.suffer_score || null,
-        fitness: a.fitness_score || null,
-        week: a.start_date?.slice(0, 10).slice(0, 7),
-        zone1: zoneSeconds[0] > 0 ? +(zoneSeconds[0] / totalZoneTime * 100).toFixed(1) : undefined,
-        zone2: zoneSeconds[1] > 0 ? +(zoneSeconds[1] / totalZoneTime * 100).toFixed(1) : undefined,
-        zone3: zoneSeconds[2] > 0 ? +(zoneSeconds[2] / totalZoneTime * 100).toFixed(1) : undefined,
-        zone4: zoneSeconds[3] > 0 ? +(zoneSeconds[3] / totalZoneTime * 100).toFixed(1) : undefined,
-        zone5: zoneSeconds[4] > 0 ? +(zoneSeconds[4] / totalZoneTime * 100).toFixed(1) : undefined
-      };
-    })
-    .filter(d => d.paceMinPerKm !== null);
+const chartData = filtered
+  .sort((a, b) => new Date(a.startDate) - new Date(b.startDate))
+  .map((a) => ({
+    ...a,
+    name: a.startDate?.slice(0, 10)
+  }))
+  .filter(d => d.paceMinPerKm !== null);
+
 
   const renderChart = (title, dataKey, color, explanation) => (
     <div className="mb-10">
