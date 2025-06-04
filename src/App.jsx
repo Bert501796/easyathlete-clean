@@ -7,6 +7,8 @@ import {
   useNavigate,
   useLocation
 } from 'react-router-dom';
+import { Navigate } from 'react-router-dom';
+
 
 import OnboardingChatbot from './components/OnboardingChatbot';
 import ConnectAccounts from './components/ConnectAccounts';
@@ -17,6 +19,7 @@ import TrainingSchedule from './pages/TrainingSchedule/TrainingSchedule';
 import Signup from './components/auth/Signup'; // ✅ updated path
 import Login from './components/auth/Login';   // ✅ updated path
 import Paywall from './components/payment/Paywall';
+import DashboardTabs from './pages/Dashboard/DashboardTabs';
 
 
 const Home = ({ answers, onComplete }) => {
@@ -108,6 +111,8 @@ export default function App() {
         <Route path="/signup" element={<Signup />} />   {/* ✅ New route */}
         <Route path="/login" element={<Login />} />     {/* ✅ New route */}
         <Route path="/pay" element={<Paywall />} />
+        <Route path="/dashboard" element={<DashboardTabs />} />
+        <Route path="/schedule" element={<Navigate to="/dashboard" />} />
 
       </Routes>
     </Router>
