@@ -30,7 +30,7 @@ const Signup = () => {
         localStorage.setItem('token', data.token);
         setMessage('✅ Signup successful! Redirecting...');
         setTimeout(() => {
-          navigate('/schedule'); // or '/insights' or your post-login page
+          navigate('/dashboard'); 
         }, 1500);
       } else {
         setMessage(data.message || '❌ Signup failed.');

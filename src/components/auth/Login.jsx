@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [message, setMessage] = useState('');
+  const navigate = useNavigate(); // ✅ this should be inside the component
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -13,10 +15,13 @@ const Login = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
       });
+
       const data = await res.json();
       if (res.ok) {
         localStorage.setItem('token', data.token);
+        localStorage.setItem('easyathlete_user_id', data.userId); // optional: ensure backend returns this
         setMessage('✅ Login successful!');
+        navigate('/dashboard'); // ✅ redirect to dashboard after login
       } else {
         setMessage(data.message || '❌ Login failed');
       }
@@ -29,9 +34,23 @@ const Login = () => {
     <div className="p-6 max-w-md mx-auto">
       <h2 className="text-xl font-bold mb-4">Login</h2>
       <form onSubmit={handleLogin} className="flex flex-col gap-4">
-        <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} required />
-        <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} required />
-        <button type="submit" className="bg-green-500 text-white px-4 py-2 rounded">Login</button>
+        <input
+          type="email"
+          placeholder="Email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+        />
+        <input
+          type="password"
+          placeholder="Password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+        />
+        <button type="submit" className="bg-green-500 text-white px-4 py-2 rounded">
+          Login
+        </button>
         {message && <p>{message}</p>}
       </form>
     </div>
