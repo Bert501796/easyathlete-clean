@@ -30,7 +30,7 @@ const GenerateSchedule = () => {
         localStorage.setItem('training_schedule', JSON.stringify(data.schedule));
 
         // 👣 Navigate to show the schedule
-        navigate('/schedule');
+        navigate('/dashboard');
       } catch (err) {
         console.error('❌ Schedule generation failed:', err);
       }

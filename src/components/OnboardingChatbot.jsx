@@ -72,7 +72,7 @@ export default function OnboardingChatbot({ onComplete }) {
     }
   };
 
-  return (
+return (
   <div className="flex flex-col h-screen">
     {/* Login button */}
     <div className="bg-white p-4 border-b flex justify-end">
@@ -87,15 +87,42 @@ export default function OnboardingChatbot({ onComplete }) {
     {/* Chat messages */}
     <div className="flex-1 overflow-y-auto p-6 space-y-3 bg-gray-50">
       {messages.map((msg, idx) => (
-        <div
-          key={idx}
-          className={`max-w-xs p-3 rounded shadow ${
-            msg.role === 'user'
-              ? 'bg-blue-100 self-end text-right'
-              : 'bg-white self-start text-left'
-          }`}
-        >
-          {msg.content}
+        <div key={idx} className="flex flex-col space-y-1">
+          <div
+            className={`max-w-xs p-3 rounded shadow ${
+              msg.role === 'user'
+                ? 'bg-blue-100 self-end text-right'
+                : 'bg-white self-start text-left'
+            }`}
+          >
+            {msg.content}
+          </div>
+
+          {/* ✅ Inject Strava button after 2 assistant messages */}
+          {msg.role === 'assistant' && idx === 2 && (
+            <div className="self-start mt-2">
+              <p className="text-sm text-gray-600 mb-2">
+                🚴 Let’s make this even more personal by connecting your Strava account.
+              </p>
+              <button
+                onClick={() => {
+                  const userId = localStorage.getItem('easyathlete_user_id');
+                  const redirectUri =
+                    window.location.hostname === 'localhost'
+                      ? 'http://localhost:5173/strava-redirect'
+                      : 'https://easyathlete.vercel.app/strava-redirect';
+                  const clientId = '161074';
+                  const stravaUrl = `https://www.strava.com/oauth/authorize?client_id=${clientId}&response_type=code&redirect_uri=${encodeURIComponent(
+                    redirectUri
+                  )}&scope=read,activity:read_all&state=${userId}`;
+                  window.location.href = stravaUrl;
+                }}
+                className="bg-orange-500 text-white px-4 py-2 rounded hover:bg-orange-600"
+              >
+                Connect Strava
+              </button>
+            </div>
+          )}
         </div>
       ))}
       <div ref={chatEndRef} />
@@ -117,5 +144,6 @@ export default function OnboardingChatbot({ onComplete }) {
     </div>
   </div>
 );
+
 
 }
