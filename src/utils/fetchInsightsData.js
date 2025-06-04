@@ -1,5 +1,3 @@
-// src/utils/fetchInsightsData.js
-
 export const fetchLatestInsightsJson = async (userId) => {
   const cacheKey = `strava_insights_${userId}`;
   const cacheTimestampKey = `${cacheKey}_timestamp`;
@@ -14,12 +12,10 @@ export const fetchLatestInsightsJson = async (userId) => {
   }
 
   try {
-    const res = await fetch(`https://easyathlete-backend-production.up.railway.app/latest-strava-url/${userId}`);
-    if (!res.ok) throw new Error('Failed to get latest Cloudinary URL');
+    const res = await fetch(`https://easyathlete-backend-production.up.railway.app/strava/insights/${userId}`);
+    if (!res.ok) throw new Error('Failed to fetch insights');
 
-    const { url } = await res.json();
-    const cloudRes = await fetch(url);
-    const json = await cloudRes.json();
+    const json = await res.json();
 
     // Cache the new result
     localStorage.setItem(cacheKey, JSON.stringify(json));
