@@ -127,7 +127,7 @@ export default function App() {
     <img
       src="/assets/strava/powered_by_strava_black.png"
       alt="Powered by Strava"
-      className="fixed bottom-4 right-4 h-4 md:h-8 z-50 opacity-80 hover:opacity-100 transition"
+      className="fixed bottom-4 right-4 h-3 md:h-5 z-50 opacity-80 hover:opacity-100 transition"
     />
   </>
 );
