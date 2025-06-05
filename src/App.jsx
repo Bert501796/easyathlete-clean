@@ -20,6 +20,8 @@ import Signup from './components/auth/Signup'; // ✅ updated path
 import Login from './components/auth/Login';   // ✅ updated path
 import Paywall from './components/payment/Paywall';
 import DashboardTabs from './pages/Dashboard/DashboardTabs';
+import PrivacyPolicy from './pages/PrivacyPolicy';
+import TermsOfService from './pages/TermsOfService';
 
 
 const Home = ({ answers, onComplete }) => {
@@ -116,7 +118,8 @@ export default function App() {
         <Route path="/pay" element={<Paywall />} />
         <Route path="/dashboard" element={<DashboardTabs />} />
         <Route path="/schedule" element={<Navigate to="/dashboard" />} />
-
+        <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+        <Route path="/terms-of-service" element={<TermsOfService />} />
       </Routes>
     </Router>
   );
