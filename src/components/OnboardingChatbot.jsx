@@ -179,9 +179,8 @@ export default function OnboardingChatbot({ onComplete }) {
                         )}&scope=read,activity:read_all&state=${userId}`;
                         window.location.href = stravaUrl;
                       }}
-                      className="bg-orange-500 text-white px-4 py-2 rounded hover:bg-orange-600"
-                    >
-                      Connect Strava
+                        className="bg-orange-500 text-white px-6 h-12 rounded hover:bg-orange-600 text-base font-medium"                    >
+                      Connect with Strava
                     </button>
                   </div>
                 )}

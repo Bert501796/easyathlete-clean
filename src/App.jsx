@@ -102,6 +102,7 @@ export default function App() {
   };
 
   return (
+  <>
     <Router>
       <Routes>
         <Route
@@ -113,8 +114,8 @@ export default function App() {
         <Route path="/schedule" element={<TrainingSchedule />} />
         <Route path="/generate" element={<GenerateSchedule />} />
         <Route path="/insights" element={<Insights />} />
-        <Route path="/signup" element={<Signup />} />   {/* ✅ New route */}
-        <Route path="/login" element={<Login />} />     {/* ✅ New route */}
+        <Route path="/signup" element={<Signup />} />
+        <Route path="/login" element={<Login />} />
         <Route path="/pay" element={<Paywall />} />
         <Route path="/dashboard" element={<DashboardTabs />} />
         <Route path="/schedule" element={<Navigate to="/dashboard" />} />
@@ -122,5 +123,12 @@ export default function App() {
         <Route path="/terms-of-service" element={<TermsOfService />} />
       </Routes>
     </Router>
-  );
+
+    <img
+      src="/assets/strava/powered_by_strava_black.png"
+      alt="Powered by Strava"
+      className="fixed bottom-4 right-4 h-6 md:h-8 z-50 opacity-80 hover:opacity-100 transition"
+    />
+  </>
+);
 }
