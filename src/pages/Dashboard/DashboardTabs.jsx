@@ -1,6 +1,6 @@
 // src/pages/Dashboard/DashboardTabs.jsx
 import React, { useState } from 'react';
-//import TrainingSchedule from '../TrainingSchedule/TrainingSchedule';
+import TrainingSchedule from '../TrainingSchedule/TrainingSchedule';
 import Insights from '../Insights/Insights'; // Make sure this component exists
 
 const DashboardTabs = () => {
