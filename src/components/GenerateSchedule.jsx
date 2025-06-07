@@ -15,19 +15,19 @@ const GenerateSchedule = () => {
       }
 
       try {
-        const res = await fetch('https://easyathlete-backend-production.up.railway.app/generate-training-schedule', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ userId, athleteData })
-        });
+        // const res = await fetch('https://easyathlete-backend-production.up.railway.app/generate-training-schedule', {
+        //   method: 'POST',
+        //   headers: { 'Content-Type': 'application/json' },
+        //   body: JSON.stringify({ userId, athleteData })
+        // });
 
-        if (!res.ok) throw new Error('Failed to generate schedule');
+        // if (!res.ok) throw new Error('Failed to generate schedule');
 
-        const data = await res.json();
-        console.log('✅ Schedule generated:', data.schedule);
+        // const data = await res.json();
+        // console.log('✅ Schedule generated:', data.schedule);
 
-        // 🧠 Store it for /schedule page
-        localStorage.setItem('training_schedule', JSON.stringify(data.schedule));
+        // // 🧠 Store it for /schedule page
+        // localStorage.setItem('training_schedule', JSON.stringify(data.schedule));
 
         // 👣 Navigate to show the schedule
         navigate('/dashboard');
