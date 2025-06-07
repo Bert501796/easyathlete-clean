@@ -61,7 +61,7 @@ const Insights = () => {
       try {
         const days = timeframes.find(t => t.label === selectedTimeframe)?.days;
         const type = selectedType === 'All' ? '' : selectedType;
-        const url = `https://easyathlete-backend-production.up.railway.app/insights/kpis/${userId}?${days ? `days=${days}` : ''}&${type ? `type=${type}` : ''}`;
+        const url = `https://easyathlete-backend-production.up.railway.app/strava/kpis/${userId}?${days ? `days=${days}` : ''}&${type ? `type=${type}` : ''}`;
         const res = await fetch(url);
         const data = await res.json();
         setKpis(data);
