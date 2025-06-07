@@ -107,6 +107,25 @@ const Insights = () => {
     </div>
   );
 
+  const renderLineChart = (title, data, dataKeys, colors, explanation) => (
+    <div className="mb-10">
+      <h2 className="text-lg font-semibold mb-1">{title}</h2>
+      <p className="text-sm text-gray-600 mb-2">{explanation}</p>
+      <ResponsiveContainer width="100%" height={300}>
+        <LineChart data={data} margin={{ top: 10, right: 30, left: 0, bottom: 5 }}>
+          <CartesianGrid strokeDasharray="3 3" />
+          <XAxis dataKey="week" />
+          <YAxis />
+          <Tooltip />
+          <Legend />
+          {dataKeys.map((key, index) => (
+            <Line key={key} type="monotone" dataKey={key} stroke={colors[index]} name={key.toUpperCase()} />
+          ))}
+        </LineChart>
+      </ResponsiveContainer>
+    </div>
+  );
+
   const renderStackedHRZoneChart = () => (
     <div className="mb-10">
       <h2 className="text-lg font-semibold mb-1">Heart Rate Zone Breakdown</h2>
@@ -170,15 +189,26 @@ const Insights = () => {
       </div>
 
       {kpis && (
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-10">
-          {renderKpiCard('Total Activities', kpis.totalActivities)}
-          {renderKpiCard('Total Distance', kpis.totalDistanceKm, ' km')}
-          {renderKpiCard('Total Time', kpis.totalTimeMin, ' min')}
-          {renderKpiCard('Avg Pace', kpis.averagePace, ' min/km')}
-          {renderKpiCard('Avg HR', kpis.averageHR, ' bpm')}
-          {renderKpiCard('Avg HR Efficiency', kpis.averageHRE)}
-          {renderKpiCard('Total Load', kpis.totalLoad)}
-        </div>
+        <>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-10">
+            {renderKpiCard('Total Activities', kpis.totalActivities)}
+            {renderKpiCard('Total Distance', kpis.totalDistanceKm, ' km')}
+            {renderKpiCard('Total Time', kpis.totalTimeMin, ' min')}
+            {renderKpiCard('Avg Pace', kpis.averagePace, ' min/km')}
+            {renderKpiCard('Avg HR', kpis.averageHR, ' bpm')}
+            {renderKpiCard('Avg HR Efficiency', kpis.averageHRE)}
+            {renderKpiCard('Total Load', kpis.totalLoad)}
+          </div>
+
+          {renderLineChart('CTL, ATL, FTL Trends', kpis.ctl.map((v, i) => ({
+            week: kpis.fitnessTrend[i]?.week,
+            CTL: kpis.ctl[i],
+            ATL: kpis.atl[i],
+            FTL: kpis.ftl[i]
+          })), ['CTL', 'ATL', 'FTL'], ['#82ca9d', '#8884d8', '#ff7300'], 'Shows weekly Chronic, Acute, and Form load trends')}
+
+          {renderLineChart('Fitness Trend Score', kpis.fitnessTrend, ['fitnessScore'], ['#17becf'], 'Represents your weekly training effectiveness based on pace, load, and HR efficiency')}
+        </>
       )}
 
       {renderChart(
