@@ -21,6 +21,7 @@ const Login = () => {
         localStorage.setItem('token', data.token);
         localStorage.setItem('easyathlete_user_id', data.customUserId || ''); // for compatibility
         localStorage.setItem('easyathlete_mongo_id', data.userId); // ✅ NEW: store real MongoDB ID
+        localStorage.setItem('strava_id', data.stravaId); // 👈 Add this
         setMessage('✅ Login successful!');
         navigate('/dashboard');
       } else {

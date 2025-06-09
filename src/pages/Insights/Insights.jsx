@@ -32,6 +32,9 @@ const Insights = () => {
   const [kpis, setKpis] = useState(null);
   const userId = localStorage.getItem('easyathlete_mongo_id');
 
+const stravaId = localStorage.getItem('strava_id');
+
+
   useEffect(() => {
     const fetchData = async () => {
       if (!userId) return;
@@ -156,94 +159,107 @@ const Insights = () => {
     </div>
   );
 
-  return (
-    <div className="max-w-4xl mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-6">📈 Performance Insights</h1>
+return (
+  <div className="max-w-4xl mx-auto p-6">
+    <h1 className="text-2xl font-bold mb-2">📈 Performance Insights</h1>
 
-      <div className="flex flex-wrap gap-4 items-center mb-6">
-        <div>
-          <label className="mr-2 font-medium">Activity type:</label>
-          <select
-            value={selectedType}
-            onChange={(e) => setSelectedType(e.target.value)}
-            className="p-2 border rounded"
-          >
-            {activityTypes.map((type) => (
-              <option key={type}>{type}</option>
-            ))}
-          </select>
-        </div>
+    {stravaId && (
+      <div className="mb-4">
+        <a
+          href={`https://www.strava.com/athletes/${stravaId}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-blue-600 hover:underline text-sm"
+        >
+          🔗 View on Strava
+        </a>
+      </div>
+    )}
 
-        <div>
-          <label className="mr-2 font-medium">Timeframe:</label>
-          <select
-            value={selectedTimeframe}
-            onChange={(e) => setSelectedTimeframe(e.target.value)}
-            className="p-2 border rounded"
-          >
-            {timeframes.map(({ label }) => (
-              <option key={label}>{label}</option>
-            ))}
-          </select>
-        </div>
+    <div className="flex flex-wrap gap-4 items-center mb-6">
+      <div>
+        <label className="mr-2 font-medium">Activity type:</label>
+        <select
+          value={selectedType}
+          onChange={(e) => setSelectedType(e.target.value)}
+          className="p-2 border rounded"
+        >
+          {activityTypes.map((type) => (
+            <option key={type}>{type}</option>
+          ))}
+        </select>
       </div>
 
-      {kpis && (
-        <>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-10">
-            {renderKpiCard('Total Activities', kpis.totalActivities)}
-            {renderKpiCard('Total Distance', kpis.totalDistanceKm, ' km')}
-            {renderKpiCard('Total Time', kpis.totalTimeMin, ' min')}
-            {renderKpiCard('Avg Pace', kpis.averagePace, ' min/km')}
-            {renderKpiCard('Avg HR', kpis.averageHR, ' bpm')}
-            {renderKpiCard('Avg HR Efficiency', kpis.averageHRE)}
-            {renderKpiCard('Total Load', kpis.totalLoad)}
-          </div>
-
-          {renderLineChart('CTL, ATL, FTL Trends', kpis.ctl.map((v, i) => ({
-            week: kpis.fitnessTrend[i]?.week,
-            CTL: kpis.ctl[i],
-            ATL: kpis.atl[i],
-            FTL: kpis.ftl[i]
-          })), ['CTL', 'ATL', 'FTL'], ['#82ca9d', '#8884d8', '#ff7300'], 'Shows weekly Chronic, Acute, and Form load trends')}
-
-          {renderLineChart('Fitness Trend Score', kpis.fitnessTrend, ['fitnessScore'], ['#17becf'], 'Represents your weekly training effectiveness based on pace, load, and HR efficiency')}
-        </>
-      )}
-
-      {renderChart(
-        'Pace (min/km) per Activity',
-        'paceMinPerKm',
-        '#8884d8',
-        'Shows how fast you ran or cycled per kilometer. Lower values indicate faster paces.'
-      )}
-
-      {filtered.length > 0 && (
-        <div className="mb-10">
-          <HeartRateEfficiencyChart data={chartData} />
-          <p className="text-sm text-gray-600 mt-2">
-            Represents how much speed you achieve per heartbeat. Higher values suggest better cardiovascular efficiency.
-          </p>
-        </div>
-      )}
-
-      {renderChart(
-        'Elevation per km',
-        'elevationPerKm',
-        '#ffc658',
-        'Indicates the climbing effort per kilometer. Helps assess hilliness of your routes.'
-      )}
-
-      {renderChart(
-        'Estimated Load',
-        'estimatedLoad',
-        '#d84e4e',
-        'Estimates workout intensity based on power or heart rate data.'
-      )}
-
-      {renderStackedHRZoneChart()}
+      <div>
+        <label className="mr-2 font-medium">Timeframe:</label>
+        <select
+          value={selectedTimeframe}
+          onChange={(e) => setSelectedTimeframe(e.target.value)}
+          className="p-2 border rounded"
+        >
+          {timeframes.map(({ label }) => (
+            <option key={label}>{label}</option>
+          ))}
+        </select>
+      </div>
     </div>
-  );
+
+    {kpis && (
+      <>
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-10">
+          {renderKpiCard('Total Activities', kpis.totalActivities)}
+          {renderKpiCard('Total Distance', kpis.totalDistanceKm, ' km')}
+          {renderKpiCard('Total Time', kpis.totalTimeMin, ' min')}
+          {renderKpiCard('Avg Pace', kpis.averagePace, ' min/km')}
+          {renderKpiCard('Avg HR', kpis.averageHR, ' bpm')}
+          {renderKpiCard('Avg HR Efficiency', kpis.averageHRE)}
+          {renderKpiCard('Total Load', kpis.totalLoad)}
+        </div>
+
+        {renderLineChart('CTL, ATL, FTL Trends', kpis.ctl.map((v, i) => ({
+          week: kpis.fitnessTrend[i]?.week,
+          CTL: kpis.ctl[i],
+          ATL: kpis.atl[i],
+          FTL: kpis.ftl[i]
+        })), ['CTL', 'ATL', 'FTL'], ['#82ca9d', '#8884d8', '#ff7300'], 'Shows weekly Chronic, Acute, and Form load trends')}
+
+        {renderLineChart('Fitness Trend Score', kpis.fitnessTrend, ['fitnessScore'], ['#17becf'], 'Represents your weekly training effectiveness based on pace, load, and HR efficiency')}
+      </>
+    )}
+
+    {renderChart(
+      'Pace (min/km) per Activity',
+      'paceMinPerKm',
+      '#8884d8',
+      'Shows how fast you ran or cycled per kilometer. Lower values indicate faster paces.'
+    )}
+
+    {filtered.length > 0 && (
+      <div className="mb-10">
+        <HeartRateEfficiencyChart data={chartData} />
+        <p className="text-sm text-gray-600 mt-2">
+          Represents how much speed you achieve per heartbeat. Higher values suggest better cardiovascular efficiency.
+        </p>
+      </div>
+    )}
+
+    {renderChart(
+      'Elevation per km',
+      'elevationPerKm',
+      '#ffc658',
+      'Indicates the climbing effort per kilometer. Helps assess hilliness of your routes.'
+    )}
+
+    {renderChart(
+      'Estimated Load',
+      'estimatedLoad',
+      '#d84e4e',
+      'Estimates workout intensity based on power or heart rate data.'
+    )}
+
+    {renderStackedHRZoneChart()}
+  </div>
+);
 };
 
 export default Insights;

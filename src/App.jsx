@@ -70,6 +70,17 @@ export default function App() {
   });
   const [showRevokeModal, setShowRevokeModal] = useState(false);
 
+  useEffect(() => {
+    // Preload strava_id if not already set
+    const token = localStorage.getItem('token');
+    if (token && !localStorage.getItem('strava_id')) {
+      const storedStravaId = localStorage.getItem('easyathlete_strava_id');
+      if (storedStravaId) {
+        localStorage.setItem('strava_id', storedStravaId);
+      }
+    }
+  }, []);
+
   const handleRevokeStrava = async () => {
     const userId = localStorage.getItem('easyathlete_user_id');
     if (!userId) return;

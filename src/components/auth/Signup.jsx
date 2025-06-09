@@ -29,6 +29,7 @@ const Signup = () => {
       if (res.ok) {
         localStorage.setItem('token', data.token);
         localStorage.setItem('easyathlete_mongo_id', data.userId); // ✅ Store MongoDB _id
+        localStorage.setItem('strava_id', data.stravaId); // 👈 Add this
         setMessage('✅ Signup successful! Redirecting...');
         setTimeout(() => {
           navigate('/dashboard');
