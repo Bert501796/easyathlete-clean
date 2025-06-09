@@ -30,7 +30,7 @@ const Insights = () => {
   const [selectedType, setSelectedType] = useState('All');
   const [selectedTimeframe, setSelectedTimeframe] = useState('All');
   const [kpis, setKpis] = useState(null);
-  const userId = localStorage.getItem('easyathlete_user_id');
+  const userId = localStorage.getItem('easyathlete_mongo_id');
 
   useEffect(() => {
     const fetchData = async () => {

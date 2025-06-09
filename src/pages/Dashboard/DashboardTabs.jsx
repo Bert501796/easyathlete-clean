@@ -1,8 +1,7 @@
 // src/pages/Dashboard/DashboardTabs.jsx
 import React, { useState } from 'react';
 import TrainingSchedule from '../TrainingSchedule/TrainingSchedule';
-import Insights from '../Insights/Insights'; // Make sure this component exists
-
+import Insights from '../Insights/Insights'; 
 const DashboardTabs = () => {
   const [activeTab, setActiveTab] = useState('schedule');
 
