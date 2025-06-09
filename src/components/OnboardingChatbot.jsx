@@ -15,7 +15,6 @@ export default function OnboardingChatbot({ onComplete }) {
   const [name, setName] = useState('');
   const [signupMessage, setSignupMessage] = useState('');
 
-  // ✅ Generate userId only when onboarding starts
   useEffect(() => {
     let userId = localStorage.getItem('easyathlete_user_id');
     if (!userId) {
@@ -95,8 +94,7 @@ export default function OnboardingChatbot({ onComplete }) {
       }
 
       localStorage.setItem('token', data.token);
-      localStorage.setItem('easyathlete_user_id', data.userId); // ✅ replace temporary with real MongoDB id
-
+      localStorage.setItem('easyathlete_user_id', data.userId);
       navigate('/generate');
     } catch (err) {
       setSignupMessage('❌ Network error');
@@ -104,23 +102,19 @@ export default function OnboardingChatbot({ onComplete }) {
   };
 
   const uploadFinalOnboarding = async (userId, conversation) => {
-  try {
-    await fetch('https://easyathlete-backend-production.up.railway.app/upload-onboarding', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userId, onboardingData: conversation })
-    });
+    try {
+      await fetch('https://easyathlete-backend-production.up.railway.app/upload-onboarding', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, onboardingData: conversation })
+      });
 
-    // ✅ Store for schedule generation
-    localStorage.setItem('onboarding_answers', JSON.stringify(conversation));
-
-    // ✅ Clear temporary messages
-    localStorage.removeItem('easyathlete_onboarding_messages');
-  } catch (err) {
-    console.error('❌ Failed to upload final onboarding conversation:', err);
-  }
-};
-
+      localStorage.setItem('onboarding_answers', JSON.stringify(conversation));
+      localStorage.removeItem('easyathlete_onboarding_messages');
+    } catch (err) {
+      console.error('❌ Failed to upload final onboarding conversation:', err);
+    }
+  };
 
   return (
     <div className="flex flex-col h-screen">
@@ -137,17 +131,6 @@ export default function OnboardingChatbot({ onComplete }) {
         </div>
       ) : (
         <>
-          {/* Login button
-          <div className="bg-white p-4 border-b flex justify-end">
-            <button
-              onClick={() => navigate('/login')}
-              className="text-blue-600 underline text-sm hover:text-blue-800"
-            >
-              Already have an account? Log in
-            </button>
-          </div> */}
-
-          {/* Chat messages */}
           <div className="flex-1 overflow-y-auto p-6 space-y-3 bg-gray-50">
             {messages.map((msg, idx) => (
               <div key={idx} className="flex flex-col space-y-1">
@@ -166,22 +149,20 @@ export default function OnboardingChatbot({ onComplete }) {
                     <p className="text-sm text-gray-600 mb-2">
                       🚴 Let’s make this even more personal by connecting your Strava account.
                     </p>
-                    <button
-                      onClick={() => {
-                        const userId = localStorage.getItem('easyathlete_user_id');
-                        const redirectUri =
-                          window.location.hostname === 'localhost'
-                            ? 'http://localhost:5173/strava-redirect'
-                            : 'https://easyathlete-clean.vercel.app/strava-redirect';
-                        const clientId = '161074';
-                        const stravaUrl = `https://www.strava.com/oauth/authorize?client_id=${clientId}&response_type=code&redirect_uri=${encodeURIComponent(
-                          redirectUri
-                        )}&scope=read,activity:read_all&state=${userId}`;
-                        window.location.href = stravaUrl;
-                      }}
-                        className="bg-orange-500 text-white px-6 h-12 rounded hover:bg-orange-600 text-base font-medium"                    >
-                      Connect with Strava
-                    </button>
+                    <a
+                      href={`https://www.strava.com/oauth/authorize?client_id=161074&response_type=code&redirect_uri=${encodeURIComponent(
+                        window.location.hostname === 'localhost'
+                          ? 'http://localhost:5173/strava-redirect'
+                          : 'https://easyathlete-clean.vercel.app/strava-redirect'
+                      )}&scope=read,activity:read_all&state=${localStorage.getItem('easyathlete_user_id')}`}
+                    className="inline-block"
+                    >
+                      <img
+                        src="/assets/strava/connect_with_strava.png"
+                        alt="Connect with Strava"
+                        className="h-12 w-auto"
+                      />
+                    </a>
                   </div>
                 )}
               </div>
@@ -189,7 +170,6 @@ export default function OnboardingChatbot({ onComplete }) {
             <div ref={chatEndRef} />
           </div>
 
-          {/* Input */}
           <div className="border-t p-4 bg-white sticky bottom-0">
             <input
               ref={inputRef}
