@@ -121,7 +121,7 @@ export default function App() {
     <>
       {/* Top-left nav: Home + legal links */}
       <div className="fixed top-4 left-4 z-50 text-xs text-gray-600 flex space-x-4 items-center">
-        {localStorage.getItem('easyathlete_user_id') ? (
+        {localStorage.getItem('easyathlete_user_id') && localStorage.getItem('onboarding_answers') ? (
         <a href="/dashboard" className="text-blue-600 font-medium hover:underline">
         Home
         </a>
