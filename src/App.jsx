@@ -1,4 +1,3 @@
-// src/App.jsx
 import React, { useState, useEffect } from 'react';
 import {
   BrowserRouter as Router,
@@ -21,27 +20,25 @@ import Paywall from './components/payment/Paywall';
 import DashboardTabs from './pages/Dashboard/DashboardTabs';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import TermsOfService from './pages/TermsOfService';
+import Support from './pages/Support/Support';
 
 const Home = ({ answers, onComplete }) => {
   const navigate = useNavigate();
   const location = useLocation();
+  const userId = localStorage.getItem('easyathlete_user_id');
 
   useEffect(() => {
     const userId = localStorage.getItem('easyathlete_user_id');
     const onboardingStarted = localStorage.getItem('easyathlete_onboarding_messages');
 
-    console.log('🧭 Router loaded at:', location.pathname);
-    console.log('👤 LocalStorage userId:', userId);
-
     if (!userId && !onboardingStarted && !location.pathname.startsWith('/strava-redirect')) {
-      console.warn('⛔ No onboarding started, redirecting to /');
       navigate('/');
     }
 
     if (location.pathname === '/' && userId && !answers) {
       console.warn('⚠️ Unexpected redirect to onboarding, but userId exists. Check onboarding_answers in localStorage.');
     }
-  }, [location.pathname, answers, navigate]);
+  }, [location.pathname, userId, answers, navigate]);
 
   if (!answers) {
     return <OnboardingChatbot onComplete={onComplete} />;
@@ -73,54 +70,16 @@ export default function App() {
   });
   const [showRevokeModal, setShowRevokeModal] = useState(false);
 
-  const handleOnboardingComplete = async (data) => {
-    let userId = localStorage.getItem('easyathlete_user_id');
-    if (!userId) {
-      userId = `user_${crypto.randomUUID()}`;
-      localStorage.setItem('easyathlete_user_id', userId);
-      console.log('🆕 Generated userId:', userId);
-    }
-
-    console.log('📤 Submitting onboarding with:', { userId, onboardingData: data });
-    try {
-      await fetch('https://easyathlete-backend-production.up.railway.app/upload-onboarding', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId, onboardingData: data }),
-      });
-      localStorage.setItem('onboarding_answers', JSON.stringify(data));
-      setAnswers(data);
-    } catch (err) {
-      console.error('❌ Failed to upload onboarding:', err);
-    }
-  };
-
-  const handleRevokeStrava = async () => {
-    const userId = localStorage.getItem('easyathlete_user_id');
-    if (!userId) return;
-    try {
-      await fetch(`https://easyathlete-backend-production.up.railway.app/auth/${userId}`, {
-        method: 'DELETE',
-      });
-      localStorage.clear();
-      alert('✅ Your data has been deleted and Strava access revoked.');
-      window.location.href = '/';
-    } catch (error) {
-      alert('❌ Something went wrong. Please try again later.');
-      console.error(error);
-    }
-  };
-
   const isLoggedIn = !!localStorage.getItem('easyathlete_user_id') && !!localStorage.getItem('onboarding_answers');
+  const isOnboarding = window.location.pathname === '/';
 
   return (
-    <>
+    <Router>
       <div className="fixed top-4 left-4 z-50 text-xs text-gray-600 flex space-x-4 items-center">
         {isLoggedIn ? (
           <>
             <a href="/dashboard" className="text-blue-600 font-medium hover:underline">Home</a>
-            <a href="/terms-of-service" className="hover:underline">Terms of Service</a>
-            <a href="/privacy-policy" className="hover:underline">Privacy Policy</a>
+            <a href="/support" className="hover:underline">Support</a>
             <details className="group relative">
               <summary className="cursor-pointer hover:underline">My Account</summary>
               <div className="absolute mt-2 bg-white border rounded shadow-lg text-sm z-50 w-48">
@@ -132,36 +91,29 @@ export default function App() {
           </>
         ) : (
           <>
+            {!isOnboarding && <a href="/" className="text-blue-600 font-medium hover:underline">Home</a>}
             <a href="/login" className="text-blue-600 font-medium hover:underline">Sign In</a>
-            <a href="/terms-of-service" className="hover:underline">Terms of Service</a>
-            <a href="/privacy-policy" className="hover:underline">Privacy Policy</a>
-            <a href="mailto:support@easyathlete.com" className="hover:underline">Contact EasyAthlete</a>
+            <a href="/support" className="hover:underline">Support</a>
           </>
         )}
       </div>
 
-      <Router>
-        <Routes>
-          <Route path="/" element={<Home answers={answers} onComplete={handleOnboardingComplete} />} />
-          <Route path="/connect" element={<ConnectAccounts />} />
-          <Route path="/strava-redirect" element={<StravaRedirect />} />
-          <Route path="/schedule" element={<TrainingSchedule />} />
-          <Route path="/generate" element={<GenerateSchedule />} />
-          <Route path="/insights" element={<Insights />} />
-          <Route path="/signup" element={<Signup />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/pay" element={<Paywall />} />
-          <Route path="/dashboard" element={<DashboardTabs />} />
-          <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-          <Route path="/terms-of-service" element={<TermsOfService />} />
-        </Routes>
-      </Router>
-
-      <img
-        src="/assets/strava/powered_by_strava_black.png"
-        alt="Powered by Strava"
-        className="fixed top-4 right-4 h-4 md:h-5 z-40 object-contain"
-      />
+      <Routes>
+        <Route path="/" element={<Home answers={answers} onComplete={setAnswers} />} />
+        <Route path="/connect" element={<ConnectAccounts />} />
+        <Route path="/strava-redirect" element={<StravaRedirect />} />
+        <Route path="/schedule" element={<TrainingSchedule />} />
+        <Route path="/generate" element={<GenerateSchedule />} />
+        <Route path="/insights" element={<Insights />} />
+        <Route path="/signup" element={<Signup />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/pay" element={<Paywall />} />
+        <Route path="/dashboard" element={<DashboardTabs />} />
+        <Route path="/schedule" element={<Navigate to="/dashboard" />} />
+        <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+        <Route path="/terms-of-service" element={<TermsOfService />} />
+        <Route path="/support" element={<Support />} />
+      </Routes>
 
       {showRevokeModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -172,11 +124,26 @@ export default function App() {
             </p>
             <div className="flex justify-end space-x-4">
               <button onClick={() => setShowRevokeModal(false)} className="text-gray-600 hover:underline">No</button>
-              <button onClick={handleRevokeStrava} className="bg-red-600 text-white px-4 py-1 rounded hover:bg-red-700">Yes, delete</button>
+              <button onClick={() => {
+                const userId = localStorage.getItem('easyathlete_user_id');
+                if (!userId) return;
+                fetch(`https://easyathlete-backend-production.up.railway.app/auth/${userId}`, {
+                  method: 'DELETE',
+                })
+                  .then(() => {
+                    localStorage.clear();
+                    alert('✅ Your data has been deleted and Strava access revoked.');
+                    window.location.href = '/';
+                  })
+                  .catch((error) => {
+                    alert('❌ Something went wrong. Please try again later.');
+                    console.error(error);
+                  });
+              }} className="bg-red-600 text-white px-4 py-1 rounded hover:bg-red-700">Yes, delete</button>
             </div>
           </div>
         </div>
       )}
-    </>
+    </Router>
   );
 }
