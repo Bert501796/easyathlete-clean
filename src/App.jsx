@@ -103,6 +103,15 @@ export default function App() {
 
   return (
   <>
+  {/* Top-left legal links */}
+    <div className="fixed top-4 left-4 z-50 text-xs text-gray-600 space-x-4">
+      <a href="/privacy-policy" className="hover:underline">
+        Privacy Policy
+      </a>
+      <a href="/terms-of-service" className="hover:underline">
+        Terms of Service
+      </a>
+    </div>
     <Router>
       <Routes>
         <Route
@@ -123,6 +132,8 @@ export default function App() {
         <Route path="/terms-of-service" element={<TermsOfService />} />
       </Routes>
     </Router>
+   
+    {/* Top-right Strava badge */}
 
     <img
       src="/assets/strava/powered_by_strava_black.png"
