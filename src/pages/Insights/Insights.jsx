@@ -169,7 +169,7 @@ return (
           href={`https://www.strava.com/athletes/${stravaId}`}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-blue-600 hover:underline text-sm"
+          className="text-[#FC5200] underline font-bold"
         >
           🔗 View on Strava
         </a>
