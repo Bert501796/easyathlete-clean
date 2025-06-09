@@ -120,24 +120,57 @@ export default function App() {
   return (
     <>
       {/* Top-left nav: Home + legal links */}
-      <div className="fixed top-4 left-4 z-50 text-xs text-gray-600 flex space-x-4 items-center">
-        {localStorage.getItem('easyathlete_user_id') && localStorage.getItem('onboarding_answers') ? (
-        <a href="/dashboard" className="text-blue-600 font-medium hover:underline">
+<div className="fixed top-4 left-4 z-50 text-xs text-gray-600 flex space-x-4 items-center">
+  {localStorage.getItem('easyathlete_user_id') && localStorage.getItem('onboarding_answers') ? (
+    <>
+      <a href="/dashboard" className="text-blue-600 font-medium hover:underline">
         Home
-        </a>
-        ) : (
-        <a href="/login" className="text-blue-600 font-medium hover:underline">
+      </a>
+      <a href="/privacy-policy" className="hover:underline">
+        Privacy Policy
+      </a>
+      <a href="/terms-of-service" className="hover:underline">
+        Terms of Service
+      </a>
+      <details className="group">
+        <summary className="cursor-pointer hover:underline">My Account</summary>
+        <div className="absolute mt-2 bg-white border rounded shadow-lg text-sm z-50">
+          <button
+            onClick={() => window.location.href = 'mailto:support@easyathlete.com'}
+            className="block w-full text-left px-4 py-2 hover:bg-gray-100"
+          >
+            Contact Support
+          </button>
+          <button
+            onClick={() => {
+              localStorage.clear();
+              window.location.href = '/';
+            }}
+            className="block w-full text-left px-4 py-2 hover:bg-gray-100"
+          >
+            Sign Out
+          </button>
+          <button
+            onClick={() => setShowRevokeModal(true)}
+            className="block w-full text-left px-4 py-2 text-red-600 hover:bg-red-100"
+          >
+            Revoke Strava Access
+          </button>
+        </div>
+      </details>
+    </>
+  ) : (
+    <>
+      <a href="mailto:support@easyathlete.com" className="hover:underline">
+        Contact EasyAthlete
+      </a>
+      <a href="/login" className="text-blue-600 font-medium hover:underline">
         Sign In
-        </a>
-        )}
+      </a>
+    </>
+  )}
+</div>
 
-        <a href="/privacy-policy" className="hover:underline">
-          Privacy Policy
-        </a>
-        <a href="/terms-of-service" className="hover:underline">
-          Terms of Service
-        </a>
-      </div>
 
       <Router>
         <Routes>
