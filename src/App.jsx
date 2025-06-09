@@ -70,6 +70,22 @@ export default function App() {
   });
   const [showRevokeModal, setShowRevokeModal] = useState(false);
 
+  const handleRevokeStrava = async () => {
+    const userId = localStorage.getItem('easyathlete_user_id');
+    if (!userId) return;
+    try {
+      await fetch(`https://easyathlete-backend-production.up.railway.app/auth/${userId}`, {
+        method: 'DELETE',
+      });
+      localStorage.clear();
+      alert('✅ Your data has been deleted and Strava access revoked.');
+      window.location.href = '/';
+    } catch (error) {
+      alert('❌ Something went wrong. Please try again later.');
+      console.error(error);
+    }
+  };
+
   const isLoggedIn = !!localStorage.getItem('easyathlete_user_id') && !!localStorage.getItem('onboarding_answers');
   const isOnboarding = window.location.pathname === '/';
 
@@ -91,12 +107,18 @@ export default function App() {
           </>
         ) : (
           <>
-            {!isOnboarding && <a href="/" className="text-blue-600 font-medium hover:underline">Home</a>}
+            {!isOnboarding && <a href="/" className="hover:underline">Home</a>}
             <a href="/login" className="text-blue-600 font-medium hover:underline">Sign In</a>
             <a href="/support" className="hover:underline">Support</a>
           </>
         )}
       </div>
+
+      <img
+        src="/assets/strava/powered_by_strava_black.png"
+        alt="Powered by Strava"
+        className="fixed top-4 right-4 h-4 md:h-5 z-40 object-contain"
+      />
 
       <Routes>
         <Route path="/" element={<Home answers={answers} onComplete={setAnswers} />} />
@@ -109,7 +131,6 @@ export default function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/pay" element={<Paywall />} />
         <Route path="/dashboard" element={<DashboardTabs />} />
-        <Route path="/schedule" element={<Navigate to="/dashboard" />} />
         <Route path="/privacy-policy" element={<PrivacyPolicy />} />
         <Route path="/terms-of-service" element={<TermsOfService />} />
         <Route path="/support" element={<Support />} />
@@ -124,22 +145,7 @@ export default function App() {
             </p>
             <div className="flex justify-end space-x-4">
               <button onClick={() => setShowRevokeModal(false)} className="text-gray-600 hover:underline">No</button>
-              <button onClick={() => {
-                const userId = localStorage.getItem('easyathlete_user_id');
-                if (!userId) return;
-                fetch(`https://easyathlete-backend-production.up.railway.app/auth/${userId}`, {
-                  method: 'DELETE',
-                })
-                  .then(() => {
-                    localStorage.clear();
-                    alert('✅ Your data has been deleted and Strava access revoked.');
-                    window.location.href = '/';
-                  })
-                  .catch((error) => {
-                    alert('❌ Something went wrong. Please try again later.');
-                    console.error(error);
-                  });
-              }} className="bg-red-600 text-white px-4 py-1 rounded hover:bg-red-700">Yes, delete</button>
+              <button onClick={handleRevokeStrava} className="bg-red-600 text-white px-4 py-1 rounded hover:bg-red-700">Yes, delete</button>
             </div>
           </div>
         </div>
