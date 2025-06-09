@@ -137,7 +137,7 @@ export default function OnboardingChatbot({ onComplete }) {
         </div>
       ) : (
         <>
-          {/* Login button */}
+          {/* Login button
           <div className="bg-white p-4 border-b flex justify-end">
             <button
               onClick={() => navigate('/login')}
@@ -145,7 +145,7 @@ export default function OnboardingChatbot({ onComplete }) {
             >
               Already have an account? Log in
             </button>
-          </div>
+          </div> */}
 
           {/* Chat messages */}
           <div className="flex-1 overflow-y-auto p-6 space-y-3 bg-gray-50">
