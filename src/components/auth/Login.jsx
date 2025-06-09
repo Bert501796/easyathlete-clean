@@ -5,7 +5,7 @@ const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [message, setMessage] = useState('');
-  const navigate = useNavigate(); // ✅ this should be inside the component
+  const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -19,9 +19,10 @@ const Login = () => {
       const data = await res.json();
       if (res.ok) {
         localStorage.setItem('token', data.token);
-        localStorage.setItem('easyathlete_user_id', data.userId); // optional: ensure backend returns this
+        localStorage.setItem('easyathlete_user_id', data.customUserId || ''); // for compatibility
+        localStorage.setItem('easyathlete_mongo_id', data.userId); // ✅ NEW: store real MongoDB ID
         setMessage('✅ Login successful!');
-        navigate('/dashboard'); // ✅ redirect to dashboard after login
+        navigate('/dashboard');
       } else {
         setMessage(data.message || '❌ Login failed');
       }

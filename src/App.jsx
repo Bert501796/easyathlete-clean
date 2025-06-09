@@ -86,7 +86,7 @@ export default function App() {
     }
   };
 
-  const isLoggedIn = !!localStorage.getItem('easyathlete_user_id') && !!localStorage.getItem('onboarding_answers');
+const isLoggedIn = !!localStorage.getItem('easyathlete_mongo_id');
   const isOnboarding = window.location.pathname === '/';
 
   return (

@@ -28,9 +28,10 @@ const Signup = () => {
 
       if (res.ok) {
         localStorage.setItem('token', data.token);
+        localStorage.setItem('easyathlete_mongo_id', data.userId); // ✅ Store MongoDB _id
         setMessage('✅ Signup successful! Redirecting...');
         setTimeout(() => {
-          navigate('/dashboard'); 
+          navigate('/dashboard');
         }, 1500);
       } else {
         setMessage(data.message || '❌ Signup failed.');
