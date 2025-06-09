@@ -25,7 +25,6 @@ import TermsOfService from './pages/TermsOfService';
 const Home = ({ answers, onComplete }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const userId = localStorage.getItem('easyathlete_user_id');
 
   useEffect(() => {
     const userId = localStorage.getItem('easyathlete_user_id');
@@ -42,7 +41,7 @@ const Home = ({ answers, onComplete }) => {
     if (location.pathname === '/' && userId && !answers) {
       console.warn('⚠️ Unexpected redirect to onboarding, but userId exists. Check onboarding_answers in localStorage.');
     }
-  }, [location.pathname, userId, answers, navigate]);
+  }, [location.pathname, answers, navigate]);
 
   if (!answers) {
     return <OnboardingChatbot onComplete={onComplete} />;
@@ -72,12 +71,10 @@ export default function App() {
     const stored = localStorage.getItem('onboarding_answers');
     return stored ? JSON.parse(stored) : null;
   });
-
   const [showRevokeModal, setShowRevokeModal] = useState(false);
 
   const handleOnboardingComplete = async (data) => {
     let userId = localStorage.getItem('easyathlete_user_id');
-
     if (!userId) {
       userId = `user_${crypto.randomUUID()}`;
       localStorage.setItem('easyathlete_user_id', userId);
@@ -85,15 +82,12 @@ export default function App() {
     }
 
     console.log('📤 Submitting onboarding with:', { userId, onboardingData: data });
-
     try {
       await fetch('https://easyathlete-backend-production.up.railway.app/upload-onboarding', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId, onboardingData: data }),
       });
-
-      console.log('✅ Onboarding complete:', data);
       localStorage.setItem('onboarding_answers', JSON.stringify(data));
       setAnswers(data);
     } catch (err) {
@@ -117,60 +111,34 @@ export default function App() {
     }
   };
 
+  const isLoggedIn = !!localStorage.getItem('easyathlete_user_id') && !!localStorage.getItem('onboarding_answers');
+
   return (
     <>
-      {/* Top-left nav: Home + legal links */}
-<div className="fixed top-4 left-4 z-50 text-xs text-gray-600 flex space-x-4 items-center">
-  {localStorage.getItem('easyathlete_user_id') && localStorage.getItem('onboarding_answers') ? (
-    <>
-      <a href="/dashboard" className="text-blue-600 font-medium hover:underline">
-        Home
-      </a>
-      <a href="/privacy-policy" className="hover:underline">
-        Privacy Policy
-      </a>
-      <a href="/terms-of-service" className="hover:underline">
-        Terms of Service
-      </a>
-      <details className="group">
-        <summary className="cursor-pointer hover:underline">My Account</summary>
-        <div className="absolute mt-2 bg-white border rounded shadow-lg text-sm z-50">
-          <button
-            onClick={() => window.location.href = 'mailto:support@easyathlete.com'}
-            className="block w-full text-left px-4 py-2 hover:bg-gray-100"
-          >
-            Contact Support
-          </button>
-          <button
-            onClick={() => {
-              localStorage.clear();
-              window.location.href = '/';
-            }}
-            className="block w-full text-left px-4 py-2 hover:bg-gray-100"
-          >
-            Sign Out
-          </button>
-          <button
-            onClick={() => setShowRevokeModal(true)}
-            className="block w-full text-left px-4 py-2 text-red-600 hover:bg-red-100"
-          >
-            Revoke Strava Access
-          </button>
-        </div>
-      </details>
-    </>
-  ) : (
-    <>
-      <a href="mailto:support@easyathlete.com" className="hover:underline">
-        Contact EasyAthlete
-      </a>
-      <a href="/login" className="text-blue-600 font-medium hover:underline">
-        Sign In
-      </a>
-    </>
-  )}
-</div>
-
+      <div className="fixed top-4 left-4 z-50 text-xs text-gray-600 flex space-x-4 items-center">
+        {isLoggedIn ? (
+          <>
+            <a href="/dashboard" className="text-blue-600 font-medium hover:underline">Home</a>
+            <a href="/terms-of-service" className="hover:underline">Terms of Service</a>
+            <a href="/privacy-policy" className="hover:underline">Privacy Policy</a>
+            <details className="group relative">
+              <summary className="cursor-pointer hover:underline">My Account</summary>
+              <div className="absolute mt-2 bg-white border rounded shadow-lg text-sm z-50 w-48">
+                <button onClick={() => window.location.href = 'mailto:support@easyathlete.com'} className="block w-full text-left px-4 py-2 hover:bg-gray-100">Contact Support</button>
+                <button onClick={() => { localStorage.clear(); window.location.href = '/'; }} className="block w-full text-left px-4 py-2 hover:bg-gray-100">Sign Out</button>
+                <button onClick={() => setShowRevokeModal(true)} className="block w-full text-left px-4 py-2 text-red-600 hover:bg-red-100">Revoke Strava Access</button>
+              </div>
+            </details>
+          </>
+        ) : (
+          <>
+            <a href="/login" className="text-blue-600 font-medium hover:underline">Sign In</a>
+            <a href="/terms-of-service" className="hover:underline">Terms of Service</a>
+            <a href="/privacy-policy" className="hover:underline">Privacy Policy</a>
+            <a href="mailto:support@easyathlete.com" className="hover:underline">Contact EasyAthlete</a>
+          </>
+        )}
+      </div>
 
       <Router>
         <Routes>
@@ -184,56 +152,17 @@ export default function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/pay" element={<Paywall />} />
           <Route path="/dashboard" element={<DashboardTabs />} />
-          <Route path="/schedule" element={<Navigate to="/dashboard" />} />
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
           <Route path="/terms-of-service" element={<TermsOfService />} />
         </Routes>
       </Router>
 
-      {/* Strava badge */}
       <img
         src="/assets/strava/powered_by_strava_black.png"
         alt="Powered by Strava"
         className="fixed top-4 right-4 h-4 md:h-5 z-40 object-contain"
       />
 
-      {/* My Account dropdown */}
-      {localStorage.getItem('easyathlete_user_id') && (
-        <div className="fixed top-4 right-36 z-50">
-          <div className="relative inline-block text-left">
-            <details className="group">
-              <summary className="cursor-pointer bg-gray-100 text-xs px-3 py-1 rounded shadow hover:bg-gray-200">
-                My Account
-              </summary>
-              <div className="absolute right-0 mt-2 w-48 bg-white border rounded shadow-lg z-50">
-                <button
-                  onClick={() => window.location.href = 'mailto:support@easyathlete.com'}
-                  className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100"
-                >
-                  Contact Support
-                </button>
-                <button
-                  onClick={() => {
-                    localStorage.clear();
-                    window.location.href = '/';
-                  }}
-                  className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100"
-                >
-                  Sign Out
-                </button>
-                <button
-                  onClick={() => setShowRevokeModal(true)}
-                  className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-100"
-                >
-                  Revoke Strava Access
-                </button>
-              </div>
-            </details>
-          </div>
-        </div>
-      )}
-
-      {/* Confirmation modal */}
       {showRevokeModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 shadow-lg w-80">
@@ -242,18 +171,8 @@ export default function App() {
               This will permanently delete your EasyAthlete account and revoke access to your Strava data.
             </p>
             <div className="flex justify-end space-x-4">
-              <button
-                onClick={() => setShowRevokeModal(false)}
-                className="text-gray-600 hover:underline"
-              >
-                No
-              </button>
-              <button
-                onClick={handleRevokeStrava}
-                className="bg-red-600 text-white px-4 py-1 rounded hover:bg-red-700"
-              >
-                Yes, delete
-              </button>
+              <button onClick={() => setShowRevokeModal(false)} className="text-gray-600 hover:underline">No</button>
+              <button onClick={handleRevokeStrava} className="bg-red-600 text-white px-4 py-1 rounded hover:bg-red-700">Yes, delete</button>
             </div>
           </div>
         </div>
