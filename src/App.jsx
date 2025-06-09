@@ -121,11 +121,16 @@ export default function App() {
     <>
       {/* Top-left nav: Home + legal links */}
       <div className="fixed top-4 left-4 z-50 text-xs text-gray-600 flex space-x-4 items-center">
-        {localStorage.getItem('easyathlete_user_id') && (
-          <a href="/dashboard" className="text-blue-600 font-medium hover:underline">
-            Home
-          </a>
+        {localStorage.getItem('easyathlete_user_id') ? (
+        <a href="/dashboard" className="text-blue-600 font-medium hover:underline">
+        Home
+        </a>
+        ) : (
+        <a href="/login" className="text-blue-600 font-medium hover:underline">
+        Sign In
+        </a>
         )}
+
         <a href="/privacy-policy" className="hover:underline">
           Privacy Policy
         </a>
@@ -156,7 +161,7 @@ export default function App() {
       <img
         src="/assets/strava/powered_by_strava_black.png"
         alt="Powered by Strava"
-        className="fixed top-4 right-4 h-3 md:h-5 z-50 opacity-80 hover:opacity-100 transition"
+        className="fixed top-4 right-4 h-4 md:h-5 z-40 object-contain"
       />
 
       {/* My Account dropdown */}
