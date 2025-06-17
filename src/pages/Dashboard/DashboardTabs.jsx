@@ -28,6 +28,12 @@ const DashboardTabs = () => {
         >
           🎯 Goals
         </button>
+        <button
+          className={`ml-6 px-4 py-2 font-semibold ${activeTab === 'admin' ? 'border-b-2 border-blue-500' : 'text-gray-500'}`}
+          onClick={() => setActiveTab('admin')}
+        >
+          🔒 Admin
+        </button>
       </div>
 
       <div>
@@ -41,3 +47,4 @@ const DashboardTabs = () => {
 };
 
 export default DashboardTabs;
+
