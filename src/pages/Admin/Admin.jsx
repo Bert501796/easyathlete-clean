@@ -4,17 +4,18 @@ const Admin = () => {
   const [status, setStatus] = useState('');
   const userId = '684451aa149305eb4092db0b'; // Replace with real userId from auth context or props
   const testActivityId = '14648230897'; // Replace with a real Strava activity ID for testing
+  const API_BASE = 'https://easyathlete-api.up.railway.app';
 
   const handleRefetchActivities = async () => {
     setStatus('🔁 Refreshing token...');
 
     try {
       // Step 1: Refresh token if needed
-      const refreshRes = await fetch('/strava/refresh-token', {
+        const refreshRes = await fetch(`${API_BASE}/strava/refresh-token`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId })
-      });
+        });
 
       const refreshText = await refreshRes.text();
       let refreshData;
@@ -31,11 +32,11 @@ const Admin = () => {
       setStatus('✅ Token ready. Fetching activities...');
 
       // Step 2: Fetch a single test activity
-      const fetchRes = await fetch(`/strava/fetch-activities?testActivityId=${testActivityId}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ accessToken, userId })
-      });
+      const fetchRes = await fetch(`${API_BASE}/strava/fetch-activities?testActivityId=${testActivityId}`, {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ accessToken, userId })
+});
 
       const fetchText = await fetchRes.text();
       let fetchData;
