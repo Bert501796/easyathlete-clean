@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import TrainingSchedule from '../TrainingSchedule/TrainingSchedule';
 import Insights from '../Insights/Insights'; 
 import Goals from '../Goals/Goals';
+import Admin from '../Admin/Admin';
 
 const DashboardTabs = () => {
   const [activeTab, setActiveTab] = useState('insights');
@@ -40,6 +41,8 @@ const DashboardTabs = () => {
         {activeTab === 'schedule' && <TrainingSchedule />}
         {activeTab === 'insights' && <Insights />}
         {activeTab === 'goals' && <Goals />}
+        {activeTab === 'admin' && <Admin />}
+
 
       </div>
     </div>
