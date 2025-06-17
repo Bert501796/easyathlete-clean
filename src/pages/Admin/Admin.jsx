@@ -4,7 +4,7 @@ const Admin = () => {
   const [status, setStatus] = useState('');
   const userId = '684451aa149305eb4092db0b'; // Replace with real userId from auth context or props
   const testActivityId = '14648230897'; // Replace with a real Strava activity ID for testing
-  const API_BASE = 'https://easyathlete-api.up.railway.app';
+  const API_BASE = 'easyathlete-backend-production.up.railway.app';
 
   const handleRefetchActivities = async () => {
     setStatus('🔁 Refreshing token...');
