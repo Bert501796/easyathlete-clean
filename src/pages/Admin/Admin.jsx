@@ -26,6 +26,7 @@ const Admin = () => {
 
       if (!refreshRes.ok) throw new Error(refreshData.error || 'Failed to refresh token');
       const accessToken = refreshData.accessToken;
+      if (!accessToken) throw new Error('No access token returned from refresh');
 
       setStatus('✅ Token ready. Fetching activities...');
 
