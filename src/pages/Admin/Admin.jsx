@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 const Admin = () => {
   const [status, setStatus] = useState('');
   const userId = '684451aa149305eb4092db0b'; // Replace with real userId from auth context or props
-  const testActivityId = '684451ab37135e5c8889adfa'; // Replace with a real Strava activity ID for testing
+  const testActivityId = '14648230897'; // Replace with a real Strava activity ID for testing
 
   const handleRefetchActivities = async () => {
     setStatus('🔁 Refreshing token...');
