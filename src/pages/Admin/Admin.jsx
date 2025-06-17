@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 
 const Admin = () => {
   const [status, setStatus] = useState('');
-  const userId = userId; // Replace with real userId from auth context or props
+  const userId = '684451aa149305eb4092db0b'; // Replace with real userId from auth context or props
 
   const handleRefetchActivities = async () => {
     setStatus('🔁 Refreshing token...');
