@@ -6,7 +6,7 @@ import Goals from '../Goals/Goals';
 import Admin from '../Admin/Admin';
 
 const DashboardTabs = () => {
-  const [activeTab, setActiveTab] = useState('insights');
+  const [activeTab, setActiveTab] = useState('admin');
 
   return (
     <div className="max-w-4xl mx-auto p-6">
