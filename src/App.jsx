@@ -22,6 +22,8 @@ import PrivacyPolicy from './pages/PrivacyPolicy';
 import TermsOfService from './pages/TermsOfService';
 import Support from './pages/Support/Support';
 import Goals from './pages/Goals/Goals';
+import StravaAdminRedirect from './components/StravaAdminRedirect'; 
+
 
 const Home = ({ answers, onComplete }) => {
   const navigate = useNavigate();
