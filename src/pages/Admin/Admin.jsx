@@ -1,10 +1,18 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 const Admin = () => {
   const [status, setStatus] = useState('');
+  const [stravaLinked, setStravaLinked] = useState(false);
   const userId = '684451aa149305eb4092db0b'; // Replace with real userId
   const testActivityId = '14648230897';
   const API_BASE = 'https://easyathlete-backend-production.up.railway.app';
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('stravaLinked') === '1') {
+      setStravaLinked(true);
+    }
+  }, []);
 
   const handleRefetchActivities = async () => {
     setStatus('🔁 Refreshing token...');
@@ -78,6 +86,12 @@ const Admin = () => {
   return (
     <div className="p-6 max-w-md mx-auto bg-white rounded-xl shadow-md space-y-4">
       <h2 className="text-xl font-bold">🛠️ Admin Panel</h2>
+
+      {stravaLinked && (
+        <div className="bg-green-100 text-green-800 p-4 rounded">
+          ✅ Successfully connected to Strava!
+        </div>
+      )}
 
       <button
         onClick={handleConnectStrava}
