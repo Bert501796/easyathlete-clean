@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 const Admin = () => {
   const [status, setStatus] = useState('');
   const [stravaLinked, setStravaLinked] = useState(false);
-  const userId = '684451aa149305eb4092db0b'; // Replace with real userId
+  const userId = localStorage.getItem('easyathlete_mongo_id'); // ✅ correct and existing
   const testActivityId = '14648230897';
   const API_BASE = 'https://easyathlete-backend-production.up.railway.app';
 
