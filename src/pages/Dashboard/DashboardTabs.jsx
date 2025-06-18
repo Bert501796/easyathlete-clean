@@ -1,12 +1,18 @@
-// src/pages/Dashboard/DashboardTabs.jsx
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import TrainingSchedule from '../TrainingSchedule/TrainingSchedule';
 import Insights from '../Insights/Insights'; 
 import Goals from '../Goals/Goals';
 import Admin from '../Admin/Admin';
 
 const DashboardTabs = () => {
-  const [activeTab, setActiveTab] = useState('admin');
+  const [activeTab, setActiveTab] = useState('schedule');
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('stravaLinked') === '1') {
+      setActiveTab('admin');
+    }
+  }, []);
 
   return (
     <div className="max-w-4xl mx-auto p-6">
@@ -42,12 +48,9 @@ const DashboardTabs = () => {
         {activeTab === 'insights' && <Insights />}
         {activeTab === 'goals' && <Goals />}
         {activeTab === 'admin' && <Admin />}
-
-
       </div>
     </div>
   );
 };
 
 export default DashboardTabs;
-
