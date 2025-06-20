@@ -16,7 +16,6 @@ const Admin = () => {
 
   const handleRefetchActivities = async () => {
     setStatus('🔁 Refreshing token...');
-
     try {
       const refreshRes = await fetch(`${API_BASE}/strava/refresh-token`, {
         method: 'POST',
@@ -63,7 +62,6 @@ const Admin = () => {
   const handleConnectStrava = async () => {
     try {
       setStatus('🔗 Generating Strava authorization link...');
-
       const res = await fetch(`${API_BASE}/strava/auth/admin-initiate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -77,6 +75,26 @@ const Admin = () => {
 
       setStatus('➡️ Redirecting to Strava...');
       window.location.href = data.authUrl;
+    } catch (err) {
+      console.error(err);
+      setStatus(`❌ ${err.message}`);
+    }
+  };
+
+  const handlePredictBestEfforts = async () => {
+    try {
+      setStatus('📈 Running best-effort prediction...');
+
+      const res = await fetch(`${API_BASE}/ml/predict`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId })
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Prediction failed');
+
+      setStatus(`✅ Prediction complete: ${JSON.stringify(data.result, null, 2)}`);
     } catch (err) {
       console.error(err);
       setStatus(`❌ ${err.message}`);
@@ -107,7 +125,14 @@ const Admin = () => {
         🔄 Re-fetch Strava Activities (Single Test Activity)
       </button>
 
-      <div className="text-sm text-gray-700 mt-2">{status}</div>
+      <button
+        onClick={handlePredictBestEfforts}
+        className="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700 w-full"
+      >
+        📊 Predict Best Effort Times (ML)
+      </button>
+
+      <div className="text-sm text-gray-700 mt-2 whitespace-pre-wrap">{status}</div>
     </div>
   );
 };
