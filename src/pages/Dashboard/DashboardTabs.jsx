@@ -3,7 +3,7 @@ import TrainingSchedule from '../TrainingSchedule/TrainingSchedule';
 import Insights from '../Insights/Insights'; 
 import Goals from '../Goals/Goals';
 import Admin from '../Admin/Admin';
-import Progress from '../Progress/Progress';
+import Progress from '../Progress/temp';
 
 const DashboardTabs = () => {
   const [activeTab, setActiveTab] = useState('Progress');
