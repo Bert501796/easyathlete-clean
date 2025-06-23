@@ -3,7 +3,7 @@ import TrainingSchedule from '../TrainingSchedule/TrainingSchedule';
 import Insights from '../Insights/Insights'; 
 import Goals from '../Goals/Goals';
 import Admin from '../Admin/Admin';
-//import Progress from '../Progress/temp';
+import Progress from '../Progress/progress';
 
 const DashboardTabs = () => {
   const [activeTab, setActiveTab] = useState('Admin');
@@ -42,12 +42,12 @@ const DashboardTabs = () => {
         >
           🔒 Admin
         </button>
-        {/* <button
+        <button
           className={`ml-6 px-4 py-2 font-semibold ${activeTab === 'Progress' ? 'border-b-2 border-blue-500' : 'text-gray-500'}`}
           onClick={() => setActiveTab('Progress')}
         >
           ♨️ Progress
-        </button> */}
+        </button>
       </div>
 
       <div>
