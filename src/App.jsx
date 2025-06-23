@@ -23,7 +23,7 @@ import TermsOfService from './pages/TermsOfService';
 import Support from './pages/Support/Support';
 import Goals from './pages/Goals/Goals';
 import StravaAdminRedirect from './components/StravaAdminRedirect'; 
-import Progress from "./pages/Progress";
+import Progress from './pages/Progress/progress';
 
 
 const Home = ({ answers, onComplete }) => {
