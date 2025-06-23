@@ -3,9 +3,10 @@ import TrainingSchedule from '../TrainingSchedule/TrainingSchedule';
 import Insights from '../Insights/Insights'; 
 import Goals from '../Goals/Goals';
 import Admin from '../Admin/Admin';
+import Progress from '../Progress/Progress';
 
 const DashboardTabs = () => {
-  const [activeTab, setActiveTab] = useState('schedule');
+  const [activeTab, setActiveTab] = useState('Progress');
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -41,6 +42,12 @@ const DashboardTabs = () => {
         >
           🔒 Admin
         </button>
+        <button
+          className={`ml-6 px-4 py-2 font-semibold ${activeTab === 'Progress' ? 'border-b-2 border-blue-500' : 'text-gray-500'}`}
+          onClick={() => setActiveTab('Progress')}
+        >
+          ♨️ Progress
+        </button>
       </div>
 
       <div>
@@ -54,3 +61,4 @@ const DashboardTabs = () => {
 };
 
 export default DashboardTabs;
+

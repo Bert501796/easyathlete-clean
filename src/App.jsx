@@ -23,6 +23,7 @@ import TermsOfService from './pages/TermsOfService';
 import Support from './pages/Support/Support';
 import Goals from './pages/Goals/Goals';
 import StravaAdminRedirect from './components/StravaAdminRedirect'; 
+import Progress from "./pages/Progress";
 
 
 const Home = ({ answers, onComplete }) => {
@@ -149,6 +150,8 @@ export default function App() {
         <Route path="/terms-of-service" element={<TermsOfService />} />
         <Route path="/support" element={<Support />} />
         <Route path="/strava-admin-redirect" element={<StravaAdminRedirect />} />
+        <Route path="/progress" element={<Progress user={user} />} />
+
 
       </Routes>
 
