@@ -15,10 +15,14 @@ const Progress = () => {
 const fetchTrends = async (type) => {
   setLoading(true);
   try {
-    const res = await axios.post("/ml/progress", {
-      userId: userId,
-      activityType: type,
-    });
+    const res = await axios.post(
+  import.meta.env.VITE_API_URL + "/ml/progress",
+  {
+    userId: localStorage.getItem("easyathlete_mongo_id"),
+    activityType: type,
+  }
+);
+
     console.log("📦 Fetched trend data:", res.data); // <--- ADD THIS
     setTrends(res.data?.trends || []);
   } catch (err) {
