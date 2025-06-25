@@ -20,7 +20,7 @@ const fetchTrends = async (type) => {
       activityType: type,
     });
     console.log("📦 Fetched trend data:", res.data); // <--- ADD THIS
-    setTrends(res.data || []);
+    setTrends(res.data?.trends || []);
   } catch (err) {
     setError("Failed to fetch progress trends.");
     console.error(err);
