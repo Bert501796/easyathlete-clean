@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { Card, CardContent } from "@/components/ui/card";
 import { Loader2, AlertTriangle } from "lucide-react";
 
 const activityOptions = ["Run", "Ride", "Swim"];
@@ -77,22 +76,29 @@ const Progress = ({ user }) => {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {trends.map((trend, index) => (
-            <Card key={index} className="rounded-2xl shadow-md">
-              <CardContent className="p-4">
-                <h3 className="text-lg font-semibold capitalize">
-                  {trend.segment_type} – {trend.metric}
-                </h3>
-                <p className="text-sm mt-1 text-gray-500">
-                  Trend:{" "}
-                  <span className={trend.trend_direction === "improving" ? "text-green-600" : "text-red-600"}>
-                    {trend.trend_direction}
-                  </span>
-                </p>
-                <p className="text-sm text-gray-500">Slope: {trend.slope}</p>
-                <p className="text-sm text-gray-500">R²: {trend.r_squared}</p>
-                <p className="text-sm text-gray-500">p-value: {trend.p_value}</p>
-              </CardContent>
-            </Card>
+            <div
+              key={index}
+              className="bg-white rounded-2xl shadow-md p-4 border border-gray-100"
+            >
+              <h3 className="text-lg font-semibold capitalize">
+                {trend.segment_type} – {trend.metric}
+              </h3>
+              <p className="text-sm mt-1 text-gray-500">
+                Trend:{" "}
+                <span
+                  className={
+                    trend.trend_direction === "improving"
+                      ? "text-green-600"
+                      : "text-red-600"
+                  }
+                >
+                  {trend.trend_direction}
+                </span>
+              </p>
+              <p className="text-sm text-gray-500">Slope: {trend.slope}</p>
+              <p className="text-sm text-gray-500">R²: {trend.r_squared}</p>
+              <p className="text-sm text-gray-500">p-value: {trend.p_value}</p>
+            </div>
           ))}
         </div>
       )}
