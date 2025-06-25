@@ -12,26 +12,23 @@ const Progress = () => {
   const [activityType, setActivityType] = useState("Run");
   const userId = localStorage.getItem("easyathlete_mongo_id");
 
-  const fetchTrends = async (type) => {
-    setLoading(true);
-    try {
-      const res = await axios.post(
-        `${import.meta.env.VITE_API_URL}/ml/progress`,
-        {
-          userId: localStorage.getItem("easyathlete_mongo_id"),
-          activityType: type,
-        }
-      );
-
-    
+const fetchTrends = async (type) => {
+  setLoading(true);
+  try {
+    const res = await axios.post("/ml/progress", {
+      userId: userId,
+      activityType: type,
+    });
+    console.log("📦 Fetched trend data:", res.data); // <--- ADD THIS
     setTrends(res.data || []);
-    } catch (err) {
-      setError("Failed to fetch progress trends.");
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
+  } catch (err) {
+    setError("Failed to fetch progress trends.");
+    console.error(err);
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   useEffect(() => {
     if (userId) {
