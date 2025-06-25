@@ -41,7 +41,8 @@ const Admin = () => {
         const fetchRes = await fetch(`${API_BASE}/strava/fetch-activities`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ accessToken, userId })
+        body: JSON.stringify({ accessToken, userId, forceRefetch: true,  // ✅ Enable full pagination
+    limit: 400 })
       });
 
       const fetchText = await fetchRes.text();
