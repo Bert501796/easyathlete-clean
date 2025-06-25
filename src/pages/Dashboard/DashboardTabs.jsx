@@ -55,6 +55,7 @@ const DashboardTabs = () => {
         {activeTab === 'insights' && <Insights />}
         {activeTab === 'goals' && <Goals />}
         {activeTab === 'admin' && <Admin />}
+        {activeTab === 'Progress' && <Progress />}
 
       </div>
     </div>
