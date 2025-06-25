@@ -4,7 +4,7 @@ const Admin = () => {
   const [status, setStatus] = useState('');
   const [stravaLinked, setStravaLinked] = useState(false);
   const userId = localStorage.getItem('easyathlete_mongo_id'); // ✅ correct and existing
-  const testActivityId = '14648230897';
+  //const testActivityId = '14648230897';
   const API_BASE = 'https://easyathlete-backend-production.up.railway.app';
 
   useEffect(() => {
@@ -37,7 +37,8 @@ const Admin = () => {
 
       setStatus('✅ Token ready. Fetching activities...');
 
-      const fetchRes = await fetch(`${API_BASE}/strava/fetch-activities?testActivityId=${testActivityId}`, {
+   //   const fetchRes = await fetch(`${API_BASE}/strava/fetch-activities?testActivityId=${testActivityId}`, {
+        const fetchRes = await fetch(`${API_BASE}/strava/fetch-activities`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ accessToken, userId })
