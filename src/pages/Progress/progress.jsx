@@ -1,20 +1,22 @@
+// src/pages/Progress/progress.jsx
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Loader2, AlertTriangle } from "lucide-react";
 
 const activityOptions = ["Run", "Ride", "Swim"];
 
-const Progress = ({ user }) => {
+const Progress = () => {
   const [trends, setTrends] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [activityType, setActivityType] = useState("Run");
+  const userId = localStorage.getItem("easyathlete_mongo_id");
 
   const fetchTrends = async (type) => {
     setLoading(true);
     try {
       const res = await axios.post("/ml/progress", {
-        userId: user?.customUserId,
+        userId,
         activityType: type,
       });
       setTrends(res.data || []);
@@ -27,10 +29,10 @@ const Progress = ({ user }) => {
   };
 
   useEffect(() => {
-    if (user?.customUserId) {
+    if (userId) {
       fetchTrends(activityType);
     }
-  }, [user, activityType]);
+  }, [userId, activityType]);
 
   if (loading) {
     return (
@@ -50,23 +52,24 @@ const Progress = ({ user }) => {
   }
 
   return (
-    <div className="p-4">
-      {/* Dropdown */}
-      <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Select activity type:
-        </label>
-        <select
-          value={activityType}
-          onChange={(e) => setActivityType(e.target.value)}
-          className="w-full md:w-64 border border-gray-300 rounded px-3 py-2 text-sm"
-        >
-          {activityOptions.map((opt) => (
-            <option key={opt} value={opt}>
-              {opt}
-            </option>
-          ))}
-        </select>
+    <div className="max-w-4xl mx-auto p-6">
+      <h1 className="text-2xl font-bold mb-4">📊 Performance Progress</h1>
+
+      <div className="flex flex-wrap gap-4 items-center mb-6">
+        <div>
+          <label className="mr-2 font-medium">Activity type:</label>
+          <select
+            value={activityType}
+            onChange={(e) => setActivityType(e.target.value)}
+            className="p-2 border rounded"
+          >
+            {activityOptions.map((type) => (
+              <option key={type} value={type}>
+                {type}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
 
       {trends.length === 0 ? (
@@ -74,7 +77,7 @@ const Progress = ({ user }) => {
           No trend data found for this activity type.
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {trends.map((trend, index) => (
             <div
               key={index}
