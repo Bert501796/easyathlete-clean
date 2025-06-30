@@ -4,41 +4,60 @@ import axios from "axios";
 import { Loader2, AlertTriangle } from "lucide-react";
 
 const activityOptions = ["Run", "Ride", "Swim"];
+const timeRangeOptions = [
+  { label: "Last 6 months", value: "6months" },
+  { label: "Last year", value: "1year" },
+];
 
 const Progress = () => {
   const [trends, setTrends] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [activityType, setActivityType] = useState("Run");
+  const [timeRange, setTimeRange] = useState("6months");
   const userId = localStorage.getItem("easyathlete_mongo_id");
 
-const fetchTrends = async (type) => {
-  setLoading(true);
-  try {
-    const res = await axios.post(
-  import.meta.env.VITE_API_URL + "/ml/progress",
-  {
-    userId: localStorage.getItem("easyathlete_mongo_id"),
-    activityType: type,
-  }
-);
+  const fetchTrends = async (type) => {
+    setLoading(true);
+    try {
+      const endDate = new Date().toISOString().split("T")[0];
+      let startDate = null;
 
-    console.log("📦 Fetched trend data:", res.data); // <--- ADD THIS
-    setTrends(res.data?.trends || []);
-  } catch (err) {
-    setError("Failed to fetch progress trends.");
-    console.error(err);
-  } finally {
-    setLoading(false);
-  }
-};
+      if (timeRange === "6months") {
+        const d = new Date();
+        d.setMonth(d.getMonth() - 6);
+        startDate = d.toISOString().split("T")[0];
+      } else if (timeRange === "1year") {
+        const d = new Date();
+        d.setFullYear(d.getFullYear() - 1);
+        startDate = d.toISOString().split("T")[0];
+      }
 
+      const res = await axios.post(
+        import.meta.env.VITE_API_URL + "/ml/progress",
+        {
+          userId,
+          activityType: type,
+          startDate,
+          endDate,
+        }
+      );
+
+      console.log("📦 Fetched trend data:", res.data);
+      setTrends(res.data?.trends || []);
+    } catch (err) {
+      setError("Failed to fetch progress trends.");
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     if (userId) {
       fetchTrends(activityType);
     }
-  }, [userId, activityType]);
+  }, [userId, activityType, timeRange]);
 
   if (loading) {
     return (
@@ -72,6 +91,20 @@ const fetchTrends = async (type) => {
             {activityOptions.map((type) => (
               <option key={type} value={type}>
                 {type}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label className="mr-2 font-medium">Time range:</label>
+          <select
+            value={timeRange}
+            onChange={(e) => setTimeRange(e.target.value)}
+            className="p-2 border rounded"
+          >
+            {timeRangeOptions.map((opt) => (
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
               </option>
             ))}
           </select>
