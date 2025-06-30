@@ -4,10 +4,11 @@ import axios from "axios";
 import { Loader2, AlertTriangle } from "lucide-react";
 
 const activityOptions = ["Run", "Ride", "Swim"];
-const timeRangeOptions = [
-  { label: "Last 6 months", value: "6months" },
-  { label: "Last year", value: "1year" },
-];
+
+const formatMetricName = (name) =>
+  name
+    .replace(/_/g, " ")
+    .replace(/\b\w/g, (c) => c.toUpperCase());
 
 const Progress = () => {
   const [trends, setTrends] = useState([]);
@@ -20,30 +21,13 @@ const Progress = () => {
   const fetchTrends = async (type) => {
     setLoading(true);
     try {
-      const endDate = new Date().toISOString().split("T")[0];
-      let startDate = null;
-
-      if (timeRange === "6months") {
-        const d = new Date();
-        d.setMonth(d.getMonth() - 6);
-        startDate = d.toISOString().split("T")[0];
-      } else if (timeRange === "1year") {
-        const d = new Date();
-        d.setFullYear(d.getFullYear() - 1);
-        startDate = d.toISOString().split("T")[0];
-      }
-
       const res = await axios.post(
         import.meta.env.VITE_API_URL + "/ml/progress",
         {
           userId,
           activityType: type,
-          startDate,
-          endDate,
         }
       );
-
-      console.log("📦 Fetched trend data:", res.data);
       setTrends(res.data?.trends || []);
     } catch (err) {
       setError("Failed to fetch progress trends.");
@@ -57,7 +41,7 @@ const Progress = () => {
     if (userId) {
       fetchTrends(activityType);
     }
-  }, [userId, activityType, timeRange]);
+  }, [userId, activityType]);
 
   if (loading) {
     return (
@@ -76,9 +60,15 @@ const Progress = () => {
     );
   }
 
+  const grouped = trends.reduce((acc, entry) => {
+    if (!acc[entry.segment_type]) acc[entry.segment_type] = [];
+    acc[entry.segment_type].push(entry);
+    return acc;
+  }, {});
+
   return (
-    <div className="max-w-4xl mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-4">📊 Performance Progress</h1>
+    <div className="max-w-6xl mx-auto p-6">
+      <h1 className="text-3xl font-bold mb-6">📊 Performance Dashboard</h1>
 
       <div className="flex flex-wrap gap-4 items-center mb-6">
         <div>
@@ -95,54 +85,41 @@ const Progress = () => {
             ))}
           </select>
         </div>
-        <div>
-          <label className="mr-2 font-medium">Time range:</label>
-          <select
-            value={timeRange}
-            onChange={(e) => setTimeRange(e.target.value)}
-            className="p-2 border rounded"
-          >
-            {timeRangeOptions.map((opt) => (
-              <option key={opt.value} value={opt.value}>
-                {opt.label}
-              </option>
-            ))}
-          </select>
-        </div>
       </div>
 
-      {trends.length === 0 ? (
+      {Object.keys(grouped).length === 0 ? (
         <div className="text-center text-gray-500 mt-10">
           No trend data found for this activity type.
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {trends.map((trend, index) => (
-            <div
-              key={index}
-              className="bg-white rounded-2xl shadow-md p-4 border border-gray-100"
-            >
-              <h3 className="text-lg font-semibold capitalize">
-                {trend.segment_type} – {trend.metric}
-              </h3>
-              <p className="text-sm mt-1 text-gray-500">
-                Trend:{" "}
-                <span
-                  className={
-                    trend.trend_direction === "improving"
-                      ? "text-green-600"
-                      : "text-red-600"
-                  }
-                >
-                  {trend.trend_direction}
-                </span>
-              </p>
-              <p className="text-sm text-gray-500">Slope: {trend.slope}</p>
-              <p className="text-sm text-gray-500">R²: {trend.r_squared}</p>
-              <p className="text-sm text-gray-500">p-value: {trend.p_value}</p>
+        Object.entries(grouped).map(([segmentType, entries]) => (
+          <div key={segmentType} className="mb-10">
+            <h2 className="text-xl font-semibold mb-2 capitalize">🔁 {segmentType} Segments</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {Array.from(new Set(entries.map((e) => e.metric))).map((metric) => {
+                const metricSeries = entries.filter((e) => e.metric === metric);
+                return (
+                  <div
+                    key={metric}
+                    className="bg-white rounded-2xl shadow-md p-4 border border-gray-100"
+                  >
+                    <h3 className="text-md font-semibold mb-2">
+                      {formatMetricName(metric)}
+                    </h3>
+                    <ul className="text-sm text-gray-600 space-y-1">
+                      {metricSeries.map((item, idx) => (
+                        <li key={idx}>
+                          <span className="font-medium mr-1">{item.week}:</span>
+                          {item.value?.toFixed(2)}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                );
+              })}
             </div>
-          ))}
-        </div>
+          </div>
+        ))
       )}
     </div>
   );
