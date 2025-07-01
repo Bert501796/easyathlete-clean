@@ -1,14 +1,25 @@
-// src/pages/Progress/progress.jsx
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Loader2, AlertTriangle } from "lucide-react";
 
 const activityOptions = ["Run", "Ride", "Swim"];
+const timeRangeOptions = ["3months", "6months"];
 
 const formatMetricName = (name) =>
   name
     .replace(/_/g, " ")
     .replace(/\b\w/g, (c) => c.toUpperCase());
+
+const getDateRange = (range) => {
+  const end = new Date();
+  const start = new Date();
+  if (range === "3months") start.setMonth(end.getMonth() - 3);
+  else if (range === "6months") start.setMonth(end.getMonth() - 6);
+  return {
+    startDate: start.toISOString().split("T")[0],
+    endDate: end.toISOString().split("T")[0],
+  };
+};
 
 const Progress = () => {
   const [trends, setTrends] = useState([]);
@@ -18,7 +29,7 @@ const Progress = () => {
   const [timeRange, setTimeRange] = useState("6months");
   const userId = localStorage.getItem("easyathlete_mongo_id");
 
-  const fetchTrends = async (type) => {
+  const fetchTrends = async (type, startDate, endDate) => {
     setLoading(true);
     try {
       const res = await axios.post(
@@ -26,9 +37,11 @@ const Progress = () => {
         {
           userId,
           activityType: type,
+          startDate,
+          endDate,
         }
       );
-      setTrends(res.data?.trends || []);
+      setTrends(res.data?.data || []);
     } catch (err) {
       setError("Failed to fetch progress trends.");
       console.error(err);
@@ -39,9 +52,10 @@ const Progress = () => {
 
   useEffect(() => {
     if (userId) {
-      fetchTrends(activityType);
+      const { startDate, endDate } = getDateRange(timeRange);
+      fetchTrends(activityType, startDate, endDate);
     }
-  }, [userId, activityType]);
+  }, [userId, activityType, timeRange]);
 
   if (loading) {
     return (
@@ -81,6 +95,21 @@ const Progress = () => {
             {activityOptions.map((type) => (
               <option key={type} value={type}>
                 {type}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div>
+          <label className="mr-2 font-medium">Time range:</label>
+          <select
+            value={timeRange}
+            onChange={(e) => setTimeRange(e.target.value)}
+            className="p-2 border rounded"
+          >
+            {timeRangeOptions.map((range) => (
+              <option key={range} value={range}>
+                {range}
               </option>
             ))}
           </select>
