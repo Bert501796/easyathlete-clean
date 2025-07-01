@@ -1,14 +1,22 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Loader2, AlertTriangle } from "lucide-react";
+import {
+  LineChart,
+  Line,
+  CartesianGrid,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+  Legend,
+} from "recharts";
 
 const activityOptions = ["Run", "Ride", "Swim"];
 const timeRangeOptions = ["3months", "6months"];
 
 const formatMetricName = (name) =>
-  name
-    .replace(/_/g, " ")
-    .replace(/\b\w/g, (c) => c.toUpperCase());
+  name.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 
 const getDateRange = (range) => {
   const end = new Date();
@@ -80,6 +88,15 @@ const Progress = () => {
     return acc;
   }, {});
 
+  const groupByMetric = (entries) => {
+    const metrics = {};
+    entries.forEach(({ metric, week, value }) => {
+      if (!metrics[metric]) metrics[metric] = [];
+      metrics[metric].push({ week, value });
+    });
+    return metrics;
+  };
+
   return (
     <div className="max-w-6xl mx-auto p-6">
       <h1 className="text-3xl font-bold mb-6">📊 Performance Dashboard</h1>
@@ -121,13 +138,13 @@ const Progress = () => {
           No trend data found for this activity type.
         </div>
       ) : (
-        Object.entries(grouped).map(([segmentType, entries]) => (
-          <div key={segmentType} className="mb-10">
-            <h2 className="text-xl font-semibold mb-2 capitalize">🔁 {segmentType} Segments</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {Array.from(new Set(entries.map((e) => e.metric))).map((metric) => {
-                const metricSeries = entries.filter((e) => e.metric === metric);
-                return (
+        Object.entries(grouped).map(([segmentType, entries]) => {
+          const metricsByType = groupByMetric(entries);
+          return (
+            <div key={segmentType} className="mb-10">
+              <h2 className="text-xl font-semibold mb-4 capitalize">🔁 {segmentType} Segments</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {Object.entries(metricsByType).map(([metric, series]) => (
                   <div
                     key={metric}
                     className="bg-white rounded-2xl shadow-md p-4 border border-gray-100"
@@ -135,20 +152,22 @@ const Progress = () => {
                     <h3 className="text-md font-semibold mb-2">
                       {formatMetricName(metric)}
                     </h3>
-                    <ul className="text-sm text-gray-600 space-y-1">
-                      {metricSeries.map((item, idx) => (
-                        <li key={idx}>
-                          <span className="font-medium mr-1">{item.week}:</span>
-                          {item.value?.toFixed(2)}
-                        </li>
-                      ))}
-                    </ul>
+                    <ResponsiveContainer width="100%" height={250}>
+                      <LineChart data={series}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="week" />
+                        <YAxis />
+                        <Tooltip />
+                        <Legend />
+                        <Line type="monotone" dataKey="value" stroke="#8884d8" dot={false} />
+                      </LineChart>
+                    </ResponsiveContainer>
                   </div>
-                );
-              })}
+                ))}
+              </div>
             </div>
-          </div>
-        ))
+          );
+        })
       )}
     </div>
   );
