@@ -22,7 +22,7 @@ const timeRangeOptions = [
   { label: "Last 3 months", value: "3months" },
   { label: "Last 6 months", value: "6months" },
   { label: "Last year", value: "1year" },
-  { label: "Custom", value: "custom" },
+  { label: "Custom", value: "custom" }
 ];
 
 const getDateRange = (range) => {
@@ -49,7 +49,7 @@ const getDateRange = (range) => {
   }
   return {
     startDate: start.toISOString().split("T")[0],
-    endDate: end.toISOString().split("T")[0],
+    endDate: end.toISOString().split("T")[0]
   };
 };
 
@@ -74,7 +74,7 @@ const Progress = () => {
   const [timeRange, setTimeRange] = useState("6months");
   const [customStart, setCustomStart] = useState("");
   const [customEnd, setCustomEnd] = useState("");
-  const [zoomRange, setZoomRange] = useState(null);
+  const [zoomLevel, setZoomLevel] = useState(100);
   const userId = localStorage.getItem("easyathlete_mongo_id");
 
   const fetchTrends = async (type, startDate, endDate) => {
@@ -86,7 +86,7 @@ const Progress = () => {
           userId,
           activityType: type === "All" ? null : type,
           startDate,
-          endDate,
+          endDate
         }
       );
       setTrends(res.data?.data || []);
@@ -128,19 +128,26 @@ const Progress = () => {
     );
   }
 
-  const fitnessSeries = trends.filter(t => t.metric === "fitness_index");
-  const allSessionDots = fitnessSeries.flatMap(({ date, value, sessions }) =>
+  const fitnessSeries = trends.filter((t) => t.metric === "fitness_index");
+  const sessionMap = {};
+  fitnessSeries.forEach(({ date, sessions }) => {
+    if (sessions && sessions.length) {
+      sessionMap[date] = sessions;
+    }
+  });
+
+  const sessionDots = fitnessSeries.flatMap(({ date, value, sessions }) =>
     (sessions || []).map((s, i) => ({
       date,
-      value: value + (i * 0.005),
-      type: s.activity_type,
-      name: s.activity_name,
+      value: value + i * 0.005,
+      activity_type: s.activity_type
     }))
   );
 
-  const filteredData = zoomRange
-    ? fitnessSeries.filter(d => d.date >= zoomRange.start && d.date <= zoomRange.end)
-    : fitnessSeries;
+  const zoomedData = fitnessSeries.slice(
+    0,
+    Math.max(5, Math.floor((fitnessSeries.length * zoomLevel) / 100))
+  );
 
   return (
     <div className="max-w-6xl mx-auto p-6">
@@ -195,6 +202,19 @@ const Progress = () => {
             </div>
           </>
         )}
+
+        <div>
+          <label className="mr-2 font-medium">Zoom level:</label>
+          <input
+            type="range"
+            min="10"
+            max="100"
+            step="10"
+            value={zoomLevel}
+            onChange={(e) => setZoomLevel(Number(e.target.value))}
+            className="w-32"
+          />
+        </div>
       </div>
 
       {fitnessSeries.length === 0 ? (
@@ -205,19 +225,8 @@ const Progress = () => {
         <div className="mb-10">
           <h2 className="text-xl font-semibold mb-4">💪 Fitness Index Over Time</h2>
           <div className="bg-white rounded-2xl shadow-md p-4 border border-gray-100 overflow-x-auto">
-            <ResponsiveContainer width={1600} height={300}>
-              <LineChart
-                data={filteredData}
-                margin={{ right: 30 }}
-                onMouseUp={(e) => {
-                  if (e && e.activeLabel) {
-                    setZoomRange({
-                      start: e.startIndex !== undefined ? filteredData[e.startIndex]?.date : null,
-                      end: e.endIndex !== undefined ? filteredData[e.endIndex]?.date : null,
-                    });
-                  }
-                }}
-              >
+            <ResponsiveContainer width="100%" height={300}>
+              <LineChart data={zoomedData} margin={{ right: 30 }}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis
                   dataKey="date"
@@ -235,14 +244,13 @@ const Progress = () => {
                   name="Fitness Index"
                 />
                 <Scatter
-                  data={allSessionDots}
-                  fill="#34D399"
+                  data={sessionDots}
                   shape={(props) => {
                     const { cx, cy, payload } = props;
-                    const shape = getSymbol(payload.type);
+                    const shape = getSymbol(payload.activity_type);
                     return (
                       <svg x={cx - 4} y={cy - 4} width={8} height={8}>
-                        {shape === "circle" && <circle cx={4} cy={4} r={4} fill={payload.type === "Run" ? "#34D399" : payload.type === "Ride" ? "#60A5FA" : "#F87171"} />}
+                        {shape === "circle" && <circle cx={4} cy={4} r={4} fill="#34D399" />}
                         {shape === "triangle" && <polygon points="4,0 8,8 0,8" fill="#60A5FA" />}
                         {shape === "square" && <rect width={8} height={8} fill="#F87171" />}
                         {shape === "diamond" && <polygon points="4,0 8,4 4,8 0,4" fill="#D1D5DB" />}
@@ -250,19 +258,7 @@ const Progress = () => {
                     );
                   }}
                 />
-                <Brush
-                  dataKey="date"
-                  height={20}
-                  stroke="#8884d8"
-                  travellerWidth={8}
-                  onChange={(range) => {
-                    if (range?.startIndex !== undefined && range?.endIndex !== undefined) {
-                      const start = fitnessSeries[range.startIndex]?.date;
-                      const end = fitnessSeries[range.endIndex]?.date;
-                      setZoomRange({ start, end });
-                    }
-                  }}
-                />
+                <Brush dataKey="date" height={20} stroke="#8884d8" travellerWidth={8} />
               </LineChart>
             </ResponsiveContainer>
           </div>
