@@ -82,37 +82,34 @@ const Progress = () => {
     );
   }
 
-  const grouped = trends.reduce((acc, entry) => {
-    if (!acc[entry.segment_type]) acc[entry.segment_type] = [];
-    acc[entry.segment_type].push(entry);
-    return acc;
-  }, {});
+  const groupByMetric = (entries) => {
+    const metrics = {};
+    const sessionMap = {}; // week -> sessions[]
+    entries.forEach(({ metric, week, value, sessions }) => {
+      if (!metrics[metric]) metrics[metric] = [];
+      metrics[metric].push({ week, value });
+      if (sessions && sessions.length) {
+        sessionMap[week] = sessions;
+      }
+    });
+    return { metrics, sessionMap };
+  };
 
-const groupByMetric = (entries) => {
-  const metrics = {};
-  const sessionMap = {}; // week -> sessions[]
-  entries.forEach(({ metric, week, value, sessions }) => {
-    if (!metrics[metric]) metrics[metric] = [];
-    metrics[metric].push({ week, value });
-    if (sessions && sessions.length) {
-      sessionMap[week] = sessions;
+  const getSymbol = (activityType) => {
+    switch (activityType) {
+      case "Run":
+        return "circle";
+      case "Ride":
+        return "triangle";
+      case "Swim":
+        return "square";
+      default:
+        return "diamond";
     }
-  });
-  return { metrics, sessionMap };
-};
+  };
 
-const getSymbol = (activityType) => {
-  switch (activityType) {
-    case "Run":
-      return "circle";
-    case "Ride":
-      return "triangle";
-    case "Swim":
-      return "square";
-    default:
-      return "diamond";
-  }
-};
+  const all = trends.filter((t) => t.segment_type === "all");
+  const { metrics, sessionMap } = groupByMetric(all);
 
   return (
     <div className="max-w-6xl mx-auto p-6">
@@ -150,92 +147,85 @@ const getSymbol = (activityType) => {
         </div>
       </div>
 
-      {Object.keys(grouped).length === 0 ? (
+      {all.length === 0 ? (
         <div className="text-center text-gray-500 mt-10">
           No trend data found for this activity type.
         </div>
       ) : (
-        Object.entries(grouped).map(([segmentType, entries]) => {
-          const metricsByType = groupByMetric(entries);
-          return (
-            <div key={segmentType} className="mb-10">
-              <h2 className="text-xl font-semibold mb-4 capitalize">🔁 {segmentType} Segments</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {Object.entries(metricsByType).map(([metric, series]) => (
-                  <div
-                    key={metric}
-                    className="bg-white rounded-2xl shadow-md p-4 border border-gray-100"
-                  >
-                    <h3 className="text-md font-semibold mb-2">
-                      {formatMetricName(metric)}
-                    </h3>
-                    <ResponsiveContainer width="100%" height={250}>
-  <LineChart data={series}>
-    <CartesianGrid strokeDasharray="3 3" />
-    <XAxis dataKey="week" />
-    <YAxis />
-    <Tooltip
-      content={({ active, payload, label }) => {
-        if (!active || !payload || !payload.length) return null;
-        const sessionData = sessionMap[label] || [];
-        return (
-          <div className="bg-white p-2 border rounded shadow text-sm max-w-xs">
-            <p className="font-semibold mb-1">Week: {label}</p>
-            <p>Value: {payload[0].value?.toFixed(2)}</p>
-            {sessionData.length > 0 && (
-              <>
-                <p className="font-semibold mt-2">Sessions:</p>
-                {sessionData.map((s, i) => (
-                  <div key={i} className="text-gray-700">
-                    • <strong>{s.activity_type}</strong> — {s.activity_name} ({s.date.split("T")[0]})
-                  </div>
-                ))}
-              </>
-            )}
-          </div>
-        );
-      }}
-    />
-    <Legend />
-    <Line
-      type="monotone"
-      dataKey="value"
-      stroke="#8884d8"
-      dot={false}
-      name={formatMetricName(metric)}
-    />
-    {/* Session dots overlay */}
-    {series.map((point, idx) =>
-      (sessionMap[point.week] || []).map((s, j) => (
-        <Line
-          key={`${idx}-${j}`}
-          type="monotone"
-          data={[{ week: point.week, value: point.value }]}
-          dataKey="value"
-          stroke="transparent"
-          dot={{
-            stroke: "black",
-            fill:
-              s.activity_type === "Run"
-                ? "#34D399"
-                : s.activity_type === "Ride"
-                ? "#60A5FA"
-                : "#F87171",
-            r: 4,
-            shape: getSymbol(s.activity_type),
-          }}
-        />
-      ))
-    )}
-  </LineChart>
-</ResponsiveContainer>
-
-                  </div>
-                ))}
+        <div className="mb-10">
+          <h2 className="text-xl font-semibold mb-4">📈 Training Trends</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {Object.entries(metrics).map(([metric, series]) => (
+              <div
+                key={metric}
+                className="bg-white rounded-2xl shadow-md p-4 border border-gray-100"
+              >
+                <h3 className="text-md font-semibold mb-2">
+                  {formatMetricName(metric)}
+                </h3>
+                <ResponsiveContainer width="100%" height={250}>
+                  <LineChart data={series}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="week" />
+                    <YAxis />
+                    <Tooltip
+                      content={({ active, payload, label }) => {
+                        if (!active || !payload || !payload.length) return null;
+                        const sessionData = sessionMap[label] || [];
+                        return (
+                          <div className="bg-white p-2 border rounded shadow text-sm max-w-xs">
+                            <p className="font-semibold mb-1">Week: {label}</p>
+                            <p>Value: {payload[0].value?.toFixed(2)}</p>
+                            {sessionData.length > 0 && (
+                              <>
+                                <p className="font-semibold mt-2">Sessions:</p>
+                                {sessionData.map((s, i) => (
+                                  <div key={i} className="text-gray-700">
+                                    • <strong>{s.activity_type}</strong> — {s.activity_name} ({s.date.split("T")[0]})
+                                  </div>
+                                ))}
+                              </>
+                            )}
+                          </div>
+                        );
+                      }}
+                    />
+                    <Legend />
+                    <Line
+                      type="monotone"
+                      dataKey="value"
+                      stroke="#8884d8"
+                      dot={false}
+                      name={formatMetricName(metric)}
+                    />
+                    {series.map((point, idx) =>
+                      (sessionMap[point.week] || []).map((s, j) => (
+                        <Line
+                          key={`${idx}-${j}`}
+                          type="monotone"
+                          data={[{ week: point.week, value: point.value }]}
+                          dataKey="value"
+                          stroke="transparent"
+                          dot={{
+                            stroke: "black",
+                            fill:
+                              s.activity_type === "Run"
+                                ? "#34D399"
+                                : s.activity_type === "Ride"
+                                ? "#60A5FA"
+                                : "#F87171",
+                            r: 4,
+                            shape: getSymbol(s.activity_type),
+                          }}
+                        />
+                      ))
+                    )}
+                  </LineChart>
+                </ResponsiveContainer>
               </div>
-            </div>
-          );
-        })
+            ))}
+          </div>
+        </div>
       )}
     </div>
   );
