@@ -10,6 +10,7 @@ import {
   Tooltip,
   ResponsiveContainer,
   Legend,
+  Scatter,
 } from "recharts";
 
 const activityOptions = ["All", "Run", "Ride", "Swim"];
@@ -125,12 +126,14 @@ const Progress = () => {
   }
 
   const fitnessSeries = trends.filter(t => t.metric === "fitness_index");
-  const sessionMap = {};
-  fitnessSeries.forEach(({ date, sessions }) => {
-    if (sessions && sessions.length) {
-      sessionMap[date] = sessions;
-    }
-  });
+  const allSessionDots = fitnessSeries.flatMap(({ date, value, sessions }) =>
+    (sessions || []).map((s, i) => ({
+      date: s.date.split("T")[0],
+      value: value + (i * 0.005),
+      type: s.activity_type,
+      name: s.activity_name,
+    }))
+  );
 
   return (
     <div className="max-w-6xl mx-auto p-6">
@@ -200,28 +203,7 @@ const Progress = () => {
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="date" />
                 <YAxis domain={[0, 1]} />
-                <Tooltip
-                  content={({ active, payload, label }) => {
-                    if (!active || !payload || !payload.length) return null;
-                    const sessionData = sessionMap[label] || [];
-                    return (
-                      <div className="bg-white p-2 border rounded shadow text-sm max-w-xs">
-                        <p className="font-semibold mb-1">Date: {label}</p>
-                        <p>Fitness Index: {payload[0].value?.toFixed(2)}</p>
-                        {sessionData.length > 0 && (
-                          <>
-                            <p className="font-semibold mt-2">Sessions:</p>
-                            {sessionData.map((s, i) => (
-                              <div key={i} className="text-gray-700">
-                                • <strong>{s.activity_type}</strong> — {s.activity_name} ({s.date.split("T")[0]})
-                              </div>
-                            ))}
-                          </>
-                        )}
-                      </div>
-                    );
-                  }}
-                />
+                <Tooltip />
                 <Legend />
                 <Line
                   type="monotone"
@@ -230,31 +212,22 @@ const Progress = () => {
                   dot={false}
                   name="Fitness Index"
                 />
-                {fitnessSeries.flatMap((point, idx) =>
-                  (sessionMap[point.date] || []).map((s, j) => (
-                    <Line
-                      key={`${idx}-${j}`}
-                      type="monotone"
-                      data={[{
-                        date: point.date,
-                        value: point.value + (j * 0.005)
-                      }]}
-                      dataKey="value"
-                      stroke="transparent"
-                      dot={{
-                        stroke: "black",
-                        fill:
-                          s.activity_type === "Run"
-                            ? "#34D399"
-                            : s.activity_type === "Ride"
-                            ? "#60A5FA"
-                            : "#F87171",
-                        r: 4,
-                        shape: getSymbol(s.activity_type),
-                      }}
-                    />
-                  ))
-                )}
+                <Scatter
+                  data={allSessionDots}
+                  fill="#34D399"
+                  shape={(props) => {
+                    const { cx, cy, payload } = props;
+                    const shape = getSymbol(payload.type);
+                    return (
+                      <svg x={cx - 4} y={cy - 4} width={8} height={8}>
+                        {shape === "circle" && <circle cx={4} cy={4} r={4} fill={payload.type === "Run" ? "#34D399" : payload.type === "Ride" ? "#60A5FA" : "#F87171"} />}
+                        {shape === "triangle" && <polygon points="4,0 8,8 0,8" fill="#60A5FA" />}
+                        {shape === "square" && <rect width={8} height={8} fill="#F87171" />}
+                        {shape === "diamond" && <polygon points="4,0 8,4 4,8 0,4" fill="#D1D5DB" />}
+                      </svg>
+                    );
+                  }}
+                />
               </LineChart>
             </ResponsiveContainer>
           </div>
