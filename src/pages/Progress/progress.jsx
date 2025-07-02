@@ -11,8 +11,7 @@ import {
   ResponsiveContainer,
   Legend,
   Scatter,
-  Brush,
-  ReferenceArea
+  Brush
 } from "recharts";
 
 const activityOptions = ["All", "Run", "Ride", "Swim"];
@@ -74,7 +73,6 @@ const Progress = () => {
   const [timeRange, setTimeRange] = useState("6months");
   const [customStart, setCustomStart] = useState("");
   const [customEnd, setCustomEnd] = useState("");
-  const [zoomLevel, setZoomLevel] = useState(100);
   const userId = localStorage.getItem("easyathlete_mongo_id");
 
   const fetchTrends = async (type, startDate, endDate) => {
@@ -144,11 +142,6 @@ const Progress = () => {
     }))
   );
 
-  const zoomedData = fitnessSeries.slice(
-    0,
-    Math.max(5, Math.floor((fitnessSeries.length * zoomLevel) / 100))
-  );
-
   return (
     <div className="max-w-6xl mx-auto p-6">
       <h1 className="text-3xl font-bold mb-6">📊 Training Progress</h1>
@@ -202,19 +195,6 @@ const Progress = () => {
             </div>
           </>
         )}
-
-        <div>
-          <label className="mr-2 font-medium">Zoom level:</label>
-          <input
-            type="range"
-            min="10"
-            max="100"
-            step="10"
-            value={zoomLevel}
-            onChange={(e) => setZoomLevel(Number(e.target.value))}
-            className="w-32"
-          />
-        </div>
       </div>
 
       {fitnessSeries.length === 0 ? (
@@ -226,7 +206,7 @@ const Progress = () => {
           <h2 className="text-xl font-semibold mb-4">💪 Fitness Index Over Time</h2>
           <div className="bg-white rounded-2xl shadow-md p-4 border border-gray-100 overflow-x-auto">
             <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={zoomedData} margin={{ right: 30 }}>
+              <LineChart data={fitnessSeries} margin={{ right: 30 }}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis
                   dataKey="date"
