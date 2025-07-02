@@ -11,7 +11,8 @@ import {
   ResponsiveContainer,
   Legend,
   Scatter,
-  Brush
+  Brush,
+  ReferenceArea
 } from "recharts";
 
 const activityOptions = ["All", "Run", "Ride", "Swim"];
@@ -73,6 +74,7 @@ const Progress = () => {
   const [timeRange, setTimeRange] = useState("6months");
   const [customStart, setCustomStart] = useState("");
   const [customEnd, setCustomEnd] = useState("");
+  const [zoomRange, setZoomRange] = useState(null);
   const userId = localStorage.getItem("easyathlete_mongo_id");
 
   const fetchTrends = async (type, startDate, endDate) => {
@@ -135,6 +137,10 @@ const Progress = () => {
       name: s.activity_name,
     }))
   );
+
+  const filteredData = zoomRange
+    ? fitnessSeries.filter(d => d.date >= zoomRange.start && d.date <= zoomRange.end)
+    : fitnessSeries;
 
   return (
     <div className="max-w-6xl mx-auto p-6">
@@ -200,7 +206,18 @@ const Progress = () => {
           <h2 className="text-xl font-semibold mb-4">💪 Fitness Index Over Time</h2>
           <div className="bg-white rounded-2xl shadow-md p-4 border border-gray-100 overflow-x-auto">
             <ResponsiveContainer width={1600} height={300}>
-              <LineChart data={fitnessSeries} margin={{ right: 30 }}>
+              <LineChart
+                data={filteredData}
+                margin={{ right: 30 }}
+                onMouseUp={(e) => {
+                  if (e && e.activeLabel) {
+                    setZoomRange({
+                      start: e.startIndex !== undefined ? filteredData[e.startIndex]?.date : null,
+                      end: e.endIndex !== undefined ? filteredData[e.endIndex]?.date : null,
+                    });
+                  }
+                }}
+              >
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis
                   dataKey="date"
@@ -233,7 +250,19 @@ const Progress = () => {
                     );
                   }}
                 />
-                <Brush dataKey="date" height={20} stroke="#8884d8" travellerWidth={8} />
+                <Brush
+                  dataKey="date"
+                  height={20}
+                  stroke="#8884d8"
+                  travellerWidth={8}
+                  onChange={(range) => {
+                    if (range?.startIndex !== undefined && range?.endIndex !== undefined) {
+                      const start = fitnessSeries[range.startIndex]?.date;
+                      const end = fitnessSeries[range.endIndex]?.date;
+                      setZoomRange({ start, end });
+                    }
+                  }}
+                />
               </LineChart>
             </ResponsiveContainer>
           </div>
