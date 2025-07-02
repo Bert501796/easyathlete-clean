@@ -88,14 +88,31 @@ const Progress = () => {
     return acc;
   }, {});
 
-  const groupByMetric = (entries) => {
-    const metrics = {};
-    entries.forEach(({ metric, week, value }) => {
-      if (!metrics[metric]) metrics[metric] = [];
-      metrics[metric].push({ week, value });
-    });
-    return metrics;
-  };
+const groupByMetric = (entries) => {
+  const metrics = {};
+  const sessionMap = {}; // week -> sessions[]
+  entries.forEach(({ metric, week, value, sessions }) => {
+    if (!metrics[metric]) metrics[metric] = [];
+    metrics[metric].push({ week, value });
+    if (sessions && sessions.length) {
+      sessionMap[week] = sessions;
+    }
+  });
+  return { metrics, sessionMap };
+};
+
+const getSymbol = (activityType) => {
+  switch (activityType) {
+    case "Run":
+      return "circle";
+    case "Ride":
+      return "triangle";
+    case "Swim":
+      return "square";
+    default:
+      return "diamond";
+  }
+};
 
   return (
     <div className="max-w-6xl mx-auto p-6">
@@ -153,15 +170,66 @@ const Progress = () => {
                       {formatMetricName(metric)}
                     </h3>
                     <ResponsiveContainer width="100%" height={250}>
-                      <LineChart data={series}>
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="week" />
-                        <YAxis />
-                        <Tooltip />
-                        <Legend />
-                        <Line type="monotone" dataKey="value" stroke="#8884d8" dot={false} />
-                      </LineChart>
-                    </ResponsiveContainer>
+  <LineChart data={series}>
+    <CartesianGrid strokeDasharray="3 3" />
+    <XAxis dataKey="week" />
+    <YAxis />
+    <Tooltip
+      content={({ active, payload, label }) => {
+        if (!active || !payload || !payload.length) return null;
+        const sessionData = sessionMap[label] || [];
+        return (
+          <div className="bg-white p-2 border rounded shadow text-sm max-w-xs">
+            <p className="font-semibold mb-1">Week: {label}</p>
+            <p>Value: {payload[0].value?.toFixed(2)}</p>
+            {sessionData.length > 0 && (
+              <>
+                <p className="font-semibold mt-2">Sessions:</p>
+                {sessionData.map((s, i) => (
+                  <div key={i} className="text-gray-700">
+                    • <strong>{s.activity_type}</strong> — {s.activity_name} ({s.date.split("T")[0]})
+                  </div>
+                ))}
+              </>
+            )}
+          </div>
+        );
+      }}
+    />
+    <Legend />
+    <Line
+      type="monotone"
+      dataKey="value"
+      stroke="#8884d8"
+      dot={false}
+      name={formatMetricName(metric)}
+    />
+    {/* Session dots overlay */}
+    {series.map((point, idx) =>
+      (sessionMap[point.week] || []).map((s, j) => (
+        <Line
+          key={`${idx}-${j}`}
+          type="monotone"
+          data={[{ week: point.week, value: point.value }]}
+          dataKey="value"
+          stroke="transparent"
+          dot={{
+            stroke: "black",
+            fill:
+              s.activity_type === "Run"
+                ? "#34D399"
+                : s.activity_type === "Ride"
+                ? "#60A5FA"
+                : "#F87171",
+            r: 4,
+            shape: getSymbol(s.activity_type),
+          }}
+        />
+      ))
+    )}
+  </LineChart>
+</ResponsiveContainer>
+
                   </div>
                 ))}
               </div>
