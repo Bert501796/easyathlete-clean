@@ -127,13 +127,13 @@ const Progress = () => {
 
   const fitnessSeries = trends.filter(t => t.metric === "fitness_index");
   const allSessionDots = fitnessSeries.flatMap(({ date, value, sessions }) =>
-    (sessions || []).map((s, i) => ({
-      date: s.date.split("T")[0],
-      value: value + (i * 0.005),
-      type: s.activity_type,
-      name: s.activity_name,
-    }))
-  );
+  (sessions || []).map((s, i) => ({
+    date,
+    value: value + (i * 0.005),
+    type: s.activity_type,
+    name: s.activity_name,
+  }))
+);
 
   return (
     <div className="max-w-6xl mx-auto p-6">
@@ -201,9 +201,34 @@ const Progress = () => {
             <ResponsiveContainer width="100%" height={300}>
               <LineChart data={fitnessSeries}>
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="date" />
+                <XAxis
+  dataKey="date"
+  tickFormatter={(tick) => tick.split("T")[0]}
+  minTickGap={20}
+/>
                 <YAxis domain={[0, 1]} />
-                <Tooltip />
+                <Tooltip
+  content={({ active, payload }) => {
+    if (!active || !payload || !payload.length) return null;
+    const point = payload[0].payload;
+    return (
+      <div className="bg-white p-2 border rounded shadow text-sm max-w-xs">
+        <p className="font-semibold mb-1">Date: {point.date}</p>
+        <p>Fitness Index: {point.value?.toFixed(2)}</p>
+        {point.sessions?.length > 0 && (
+          <>
+            <p className="font-semibold mt-2">Sessions:</p>
+            {point.sessions.map((s, i) => (
+              <div key={i} className="text-gray-700">
+                • <strong>{s.activity_type}</strong> — {s.activity_name} ({s.date.split("T")[0]})
+              </div>
+            ))}
+          </>
+        )}
+      </div>
+    );
+  }}
+/>
                 <Legend />
                 <Line
                   type="monotone"
