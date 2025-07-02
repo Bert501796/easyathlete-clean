@@ -12,7 +12,7 @@ import {
   Legend,
 } from "recharts";
 
-const activityOptions = ["Run", "Ride", "Swim"];
+const activityOptions = ["All", "Run", "Ride", "Swim"];
 const timeRangeOptions = [
   { label: "Last week", value: "1week" },
   { label: "Last 4 weeks", value: "4weeks" },
@@ -67,7 +67,7 @@ const Progress = () => {
   const [trends, setTrends] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [activityType, setActivityType] = useState("Run");
+  const [activityType, setActivityType] = useState("All");
   const [timeRange, setTimeRange] = useState("6months");
   const [customStart, setCustomStart] = useState("");
   const [customEnd, setCustomEnd] = useState("");
@@ -80,7 +80,7 @@ const Progress = () => {
         import.meta.env.VITE_API_URL + "/ml/progress",
         {
           userId,
-          activityType: type,
+          activityType: type === "All" ? null : type,
           startDate,
           endDate,
         }
@@ -124,11 +124,11 @@ const Progress = () => {
     );
   }
 
-  const fitnessSeries = trends.filter(t => t.segment_type === "all" && t.metric === "fitness_index");
+  const fitnessSeries = trends.filter(t => t.metric === "fitness_index");
   const sessionMap = {};
-  fitnessSeries.forEach(({ week, sessions }) => {
+  fitnessSeries.forEach(({ date, sessions }) => {
     if (sessions && sessions.length) {
-      sessionMap[week] = sessions;
+      sessionMap[date] = sessions;
     }
   });
 
@@ -145,9 +145,7 @@ const Progress = () => {
             className="p-2 border rounded"
           >
             {activityOptions.map((type) => (
-              <option key={type} value={type}>
-                {type}
-              </option>
+              <option key={type} value={type}>{type}</option>
             ))}
           </select>
         </div>
@@ -200,7 +198,7 @@ const Progress = () => {
             <ResponsiveContainer width="100%" height={300}>
               <LineChart data={fitnessSeries}>
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="week" />
+                <XAxis dataKey="date" />
                 <YAxis domain={[0, 1]} />
                 <Tooltip
                   content={({ active, payload, label }) => {
@@ -208,7 +206,7 @@ const Progress = () => {
                     const sessionData = sessionMap[label] || [];
                     return (
                       <div className="bg-white p-2 border rounded shadow text-sm max-w-xs">
-                        <p className="font-semibold mb-1">Week: {label}</p>
+                        <p className="font-semibold mb-1">Date: {label}</p>
                         <p>Fitness Index: {payload[0].value?.toFixed(2)}</p>
                         {sessionData.length > 0 && (
                           <>
@@ -232,12 +230,15 @@ const Progress = () => {
                   dot={false}
                   name="Fitness Index"
                 />
-                {fitnessSeries.map((point, idx) =>
-                  (sessionMap[point.week] || []).map((s, j) => (
+                {fitnessSeries.flatMap((point, idx) =>
+                  (sessionMap[point.date] || []).map((s, j) => (
                     <Line
                       key={`${idx}-${j}`}
                       type="monotone"
-                      data={[{ week: point.week, value: point.value }]}
+                      data={[{
+                        date: point.date,
+                        value: point.value + (j * 0.005)
+                      }]}
                       dataKey="value"
                       stroke="transparent"
                       dot={{
